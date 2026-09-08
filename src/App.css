@@ -1,1 +1,146 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --bg-app: #f1f5f9;
+  --bg-panel: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-desk: #e2e8f0;
+  --border-color: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --paper-bg: #ffffff;
+}
+
+[data-theme="light"] {
+  --bg-app: #f1f5f9;
+  --bg-panel: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-desk: #e2e8f0;
+  --border-color: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --paper-bg: #ffffff;
+}
+
+[data-theme="warm"] {
+  --bg-app: #ede3d2;
+  --bg-panel: #f7f0e4;
+  --bg-subtle: #eee3d1;
+  --bg-desk: #dfd1bb;
+  --border-color: #d8c8af;
+  --border-subtle: #e5dac6;
+  --text-primary: #2e2318;
+  --text-secondary: #7c6853;
+  --text-muted: #a08c76;
+  --paper-bg: #fcf6e8;
+}
+
+[data-theme="charcoal"] {
+  --bg-app: #151922;
+  --bg-panel: #1e2535;
+  --bg-subtle: #181d2a;
+  --bg-desk: #1a202c;
+  --border-color: #2f394d;
+  --border-subtle: #242c3d;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --paper-bg: #242b3b;
+}
+
+[data-theme="dark"] {
+  --bg-app: #09090b;
+  --bg-panel: #111114;
+  --bg-subtle: #18181c;
+  --bg-desk: #050507;
+  --border-color: #26262e;
+  --border-subtle: #1c1c22;
+  --text-primary: #fafafa;
+  --text-secondary: #71717a;
+  --text-muted: #52525b;
+  --paper-bg: #16161a;
+}
+
+/* Warm theme global class overrides */
+[data-theme="warm"] body,
+[data-theme="warm"] .bg-neutral-50 {
+  background-color: var(--bg-app) !important;
+}
+[data-theme="warm"] .bg-white {
+  background-color: var(--bg-panel) !important;
+}
+[data-theme="warm"] .bg-neutral-100 {
+  background-color: var(--bg-subtle) !important;
+}
+[data-theme="warm"] .border-neutral-100,
+[data-theme="warm"] .border-neutral-200,
+[data-theme="warm"] .border-neutral-300 {
+  border-color: var(--border-color) !important;
+}
+[data-theme="warm"] .text-neutral-900,
+[data-theme="warm"] .text-neutral-800 {
+  color: var(--text-primary) !important;
+}
+[data-theme="warm"] .text-neutral-600,
+[data-theme="warm"] .text-neutral-500 {
+  color: var(--text-secondary) !important;
+}
+[data-theme="warm"] .text-neutral-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Charcoal slate global class overrides */
+[data-theme="charcoal"] body,
+[data-theme="charcoal"] .dark\:bg-neutral-950,
+[data-theme="charcoal"] .bg-neutral-950 {
+  background-color: var(--bg-app) !important;
+}
+[data-theme="charcoal"] .dark\:bg-neutral-900,
+[data-theme="charcoal"] .bg-neutral-900,
+[data-theme="charcoal"] .dark\:bg-neutral-900\/80 {
+  background-color: var(--bg-panel) !important;
+}
+[data-theme="charcoal"] .dark\:bg-neutral-800,
+[data-theme="charcoal"] .bg-neutral-800,
+[data-theme="charcoal"] .dark\:bg-neutral-800\/80,
+[data-theme="charcoal"] .dark\:bg-neutral-800\/40 {
+  background-color: var(--bg-subtle) !important;
+}
+[data-theme="charcoal"] .dark\:border-neutral-800,
+[data-theme="charcoal"] .border-neutral-800,
+[data-theme="charcoal"] .dark\:border-neutral-700,
+[data-theme="charcoal"] .border-neutral-700 {
+  border-color: var(--border-color) !important;
+}
+[data-theme="charcoal"] .dark\:text-neutral-100,
+[data-theme="charcoal"] .text-neutral-100 {
+  color: var(--text-primary) !important;
+}
+[data-theme="charcoal"] .dark\:text-neutral-400,
+[data-theme="charcoal"] .text-neutral-400 {
+  color: var(--text-secondary) !important;
+}
+
+/* Deep Dark global class overrides */
+[data-theme="dark"] body,
+[data-theme="dark"] .dark\:bg-neutral-950,
+[data-theme="dark"] .bg-neutral-950 {
+  background-color: var(--bg-app) !important;
+}
+[data-theme="dark"] .dark\:bg-neutral-900,
+[data-theme="dark"] .bg-neutral-900 {
+  background-color: var(--bg-panel) !important;
+}
+[data-theme="dark"] .dark\:bg-neutral-800,
+[data-theme="dark"] .bg-neutral-800 {
+  background-color: var(--bg-subtle) !important;
+}
+[data-theme="dark"] .dark\:border-neutral-800,
+[data-theme="dark"] .border-neutral-800 {
+  border-color: var(--border-color) !important;
+}

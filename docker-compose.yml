@@ -1,0 +1,16 @@
+services:
+  whiteboard:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - wb_data:/app/server/data
+    environment:
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-change-this-to-a-random-secret}
+      - DATABASE_URL=./data/whiteboard.db
+      - UPLOAD_DIR=./data/uploads
+    restart: unless-stopped
+
+volumes:
+  wb_data:
