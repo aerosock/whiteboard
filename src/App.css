@@ -18,7 +18,7 @@
   --bg-app: #f1f5f9;
   --bg-panel: #ffffff;
   --bg-subtle: #f8fafc;
-  --bg-desk: #e2e8f0;
+  --bg-desk: #e8edf2;
   --border-color: #e2e8f0;
   --border-subtle: #f1f5f9;
   --text-primary: #0f172a;
@@ -28,16 +28,16 @@
 }
 
 [data-theme="warm"] {
-  --bg-app: #ede3d2;
-  --bg-panel: #f7f0e4;
-  --bg-subtle: #eee3d1;
-  --bg-desk: #dfd1bb;
-  --border-color: #d8c8af;
-  --border-subtle: #e5dac6;
-  --text-primary: #2e2318;
-  --text-secondary: #7c6853;
-  --text-muted: #a08c76;
-  --paper-bg: #fcf6e8;
+  --bg-app: #ebe6ce;
+  --bg-panel: #f9f6e6;
+  --bg-subtle: #eee9d3;
+  --bg-desk: #e4debf;
+  --border-color: #d8d1b1;
+  --border-subtle: #e5dfc4;
+  --text-primary: #2d2616;
+  --text-secondary: #706646;
+  --text-muted: #998e6a;
+  --paper-bg: #fdfcf0;
 }
 
 [data-theme="charcoal"] {

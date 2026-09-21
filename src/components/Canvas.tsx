@@ -102,17 +102,17 @@ export interface ThemePalette {
 export function getThemeColors(t: EffectiveTheme): ThemePalette {
   if (t === "warm") {
     return {
-      deskBg: "#dfd1bb",
-      paperBg: "#fcf6e8",
-      paperBorder: "#cfbe9f",
-      lineColor: "#a08a6e",
-      gridColor: "#baa78c",
-      dotColor: "#a08a6e",
-      marginRed: "#b91c1c",
-      pageLabel: "#7c6853",
-      shadowAlpha1: "rgba(75, 55, 30, 0.18)",
-      shadowAlpha2: "rgba(75, 55, 30, 0.08)",
-      spineShadow: "rgba(75, 55, 30, 0.22)",
+      deskBg: "#e4debf",
+      paperBg: "#fdfcf0",
+      paperBorder: "#d4cdad",
+      lineColor: "#998f6d",
+      gridColor: "#b5ab8b",
+      dotColor: "#998f6d",
+      marginRed: "#b83232",
+      pageLabel: "#746a48",
+      shadowAlpha1: "rgba(60, 50, 20, 0.14)",
+      shadowAlpha2: "rgba(60, 50, 20, 0.06)",
+      spineShadow: "rgba(60, 50, 20, 0.16)",
     };
   }
   if (t === "charcoal") {
@@ -147,7 +147,7 @@ export function getThemeColors(t: EffectiveTheme): ThemePalette {
   }
   // Default "light"
   return {
-    deskBg: "#e2e8f0",
+    deskBg: "#e8edf2",
     paperBg: "#ffffff",
     paperBorder: "#cbd5e1",
     lineColor: "#94a3b8",
@@ -155,9 +155,9 @@ export function getThemeColors(t: EffectiveTheme): ThemePalette {
     dotColor: "#94a3b8",
     marginRed: "#ef4444",
     pageLabel: "#64748b",
-    shadowAlpha1: "rgba(0, 0, 0, 0.10)",
-    shadowAlpha2: "rgba(0, 0, 0, 0.05)",
-    spineShadow: "rgba(0, 0, 0, 0.16)",
+    shadowAlpha1: "rgba(0, 0, 0, 0.08)",
+    shadowAlpha2: "rgba(0, 0, 0, 0.04)",
+    spineShadow: "rgba(0, 0, 0, 0.12)",
   };
 }
 

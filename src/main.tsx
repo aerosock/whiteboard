@@ -4,6 +4,8 @@ import App from "./App";
 import { ThemeProvider } from "./hooks/useTheme";
 import "./App.css";
 
+import { applyWindowDecorations } from "./lib/window";
+
 // Apply saved UI scale on launch
 const savedScale = localStorage.getItem("wb_ui_scale");
 if (savedScale) {
@@ -12,6 +14,9 @@ if (savedScale) {
     document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
   }
 }
+
+// Apply window decoration preference on desktop
+applyWindowDecorations();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

@@ -128,7 +128,7 @@ export default function BoardHeader({
   }
 
   return (
-    <header className="px-3 py-1.5 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 select-none flex-shrink-0 z-20">
+    <header data-tauri-drag-region className="px-3 py-1.5 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 select-none flex-shrink-0 z-20">
       {/* Left Section: App Menu + Sidebar Toggle + Dashboard Button + Title */}
       <div className="flex items-center gap-1.5">
         <AppMenu

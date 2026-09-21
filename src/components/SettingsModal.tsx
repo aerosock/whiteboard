@@ -3,6 +3,7 @@ import { X, Sun, Moon, Monitor, FileText, LayoutGrid, HardDrive, LogOut, SunMedi
 import { ThemeMode, useTheme } from "../hooks/useTheme";
 import { PaperStyle, BoardMode, isDesktopApp, PageLayout } from "../lib/storage";
 import { User } from "../lib/api";
+import { applyWindowDecorations, WindowDecorationsMode } from "../lib/window";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,11 +39,20 @@ export default function SettingsModal({
     const saved = localStorage.getItem("wb_ui_scale");
     return saved ? Number(saved) : 100;
   });
+  const [decorationsMode, setDecorationsMode] = useState<WindowDecorationsMode>(() => {
+    return (localStorage.getItem("wb_window_decorations") as WindowDecorationsMode) || "auto";
+  });
 
   function handleScaleChange(scale: number) {
     setUiScale(scale);
     localStorage.setItem("wb_ui_scale", String(scale));
     document.documentElement.style.fontSize = `${(scale / 100) * 16}px`;
+  }
+
+  function handleDecorationsChange(newMode: WindowDecorationsMode) {
+    setDecorationsMode(newMode);
+    localStorage.setItem("wb_window_decorations", newMode);
+    applyWindowDecorations(newMode);
   }
 
   if (!isOpen) return null;
@@ -122,6 +132,35 @@ export default function SettingsModal({
               ))}
             </div>
           </div>
+
+          {/* Window Titlebar (Desktop only) */}
+          {isDesktop && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                Window Frame / Titlebar
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: "auto" as WindowDecorationsMode, label: "Auto (TWM)", desc: "Hide on Hyprland/TWM" },
+                  { id: "hide" as WindowDecorationsMode, label: "Hidden", desc: "Clean frameless" },
+                  { id: "show" as WindowDecorationsMode, label: "Visible", desc: "Native titlebar" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleDecorationsChange(item.id)}
+                    className={`py-2 px-1.5 rounded-lg border text-center transition-all ${
+                      decorationsMode === item.id
+                        ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
+                        : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                    }`}
+                  >
+                    <div className="text-xs">{item.label}</div>
+                    <div className="text-[10px] text-neutral-400 dark:text-neutral-500">{item.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Canvas Mode */}
           <div className="space-y-2">

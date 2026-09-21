@@ -248,7 +248,7 @@ export default function Dashboard({
       />
 
       {/* Header */}
-      <header className="px-6 py-3 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+      <header data-tauri-drag-region className="px-6 py-3 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
         <div />
 
         <div className="flex items-center gap-2">
