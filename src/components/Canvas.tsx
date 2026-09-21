@@ -4,6 +4,11 @@ import { setupBoardSync, BoardSync, RemoteCursor } from "../lib/sync";
 import { api } from "../lib/api";
 import { BoardMode, PaperStyle, PageLayout, getLocalBoard, saveLocalBoard } from "../lib/storage";
 import { EffectiveTheme } from "../hooks/useTheme";
+import { getNativeClipboardImage } from "../lib/window";
+
+function getDpr(): number {
+  return Math.max(window.devicePixelRatio || 1, 2);
+}
 
 export interface StrokeData {
   id: string;
@@ -139,7 +144,7 @@ export function getThemeColors(t: EffectiveTheme): ThemePalette {
       gridColor: "#33333e",
       dotColor: "#555566",
       marginRed: "#ef4444",
-      pageLabel: "#71717a",
+      pageLabel: "#a1a1aa",
       shadowAlpha1: "rgba(0, 0, 0, 0.60)",
       shadowAlpha2: "rgba(0, 0, 0, 0.35)",
       spineShadow: "rgba(0, 0, 0, 0.65)",
@@ -506,26 +511,40 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     const persistTimer = useRef<any>(null);
     function persistLocalData(immediate = false) {
       if (syncRef.current || !boardIdRef.current) return;
+      const doPersist = () => {
+        const id = boardIdRef.current;
+        if (!id) return;
+        try {
+          if (undoStack.current.length > 100) {
+            undoStack.current = undoStack.current.slice(-100);
+          }
+          if (redoStack.current.length > 50) {
+            redoStack.current = redoStack.current.slice(-50);
+          }
+          localStorage.setItem(`wb_strokes_${id}`, JSON.stringify(strokes.current));
+          localStorage.setItem(`wb_images_${id}`, JSON.stringify(images.current));
+          localStorage.setItem(`wb_undo_${id}`, JSON.stringify(undoStack.current));
+          localStorage.setItem(`wb_redo_${id}`, JSON.stringify(redoStack.current));
+        } catch (e) {
+          console.warn("Failed to persist board state, attempting trimmed fallback:", e);
+          try {
+            localStorage.setItem(`wb_strokes_${id}`, JSON.stringify(strokes.current));
+            localStorage.setItem(`wb_images_${id}`, JSON.stringify(images.current));
+            localStorage.setItem(`wb_undo_${id}`, JSON.stringify(undoStack.current.slice(-20)));
+            localStorage.setItem(`wb_redo_${id}`, JSON.stringify([]));
+          } catch (err2) {
+            console.error("Failed to persist local elements:", err2);
+          }
+        }
+      };
+
       if (immediate) {
         if (persistTimer.current) clearTimeout(persistTimer.current);
-        try {
-          localStorage.setItem(`wb_strokes_${boardIdRef.current}`, JSON.stringify(strokes.current));
-          localStorage.setItem(`wb_images_${boardIdRef.current}`, JSON.stringify(images.current));
-        } catch (e) {
-          console.error("Failed to persist local elements:", e);
-        }
+        doPersist();
         return;
       }
       if (persistTimer.current) clearTimeout(persistTimer.current);
-      persistTimer.current = setTimeout(() => {
-        if (!boardIdRef.current) return;
-        try {
-          localStorage.setItem(`wb_strokes_${boardIdRef.current}`, JSON.stringify(strokes.current));
-          localStorage.setItem(`wb_images_${boardIdRef.current}`, JSON.stringify(images.current));
-        } catch (e) {
-          console.error("Failed to persist local elements:", e);
-        }
-      }, 150);
+      persistTimer.current = setTimeout(doPersist, 150);
     }
 
     const camTimer = useRef<any>(null);
@@ -666,6 +685,12 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           const rawImages = localStorage.getItem(`wb_images_${boardId}`);
           const parsedImages: ImageElement[] = rawImages ? JSON.parse(rawImages) : [];
 
+          const rawUndo = localStorage.getItem(`wb_undo_${boardId}`);
+          undoStack.current = rawUndo ? JSON.parse(rawUndo) : [];
+
+          const rawRedo = localStorage.getItem(`wb_redo_${boardId}`);
+          redoStack.current = rawRedo ? JSON.parse(rawRedo) : [];
+
           const { strokes: migratedStrokes, images: migratedImages, migrated } =
             migrateStrokesAndImages(parsedStrokes, parsedImages, modeRef.current === "notebook");
 
@@ -692,6 +717,9 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         } catch (e) {
           console.error("Failed to load local board elements:", e);
         }
+      } else {
+        undoStack.current = [];
+        redoStack.current = [];
       }
     }, [boardId, roomId]);
 
@@ -1449,7 +1477,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
       const currentTheme = themeRef.current;
       const colors = getThemeColors(currentTheme);
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       const c = cam.current;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1468,6 +1496,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
         const isDoubleSpread = layoutRef.current === "double";
 
+        // Pass 1: Render all paper sheets and drop shadows
         for (let i = 1; i <= countRef.current; i++) {
           const p = getPageRect(i);
 
@@ -1477,7 +1506,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
           const pageCol = isDoubleSpread ? (i - 1) % 2 : 0;
 
-          // Fast hardware-accelerated drop shadow (eliminates expensive CPU Gaussian blur)
+          // Fast hardware-accelerated drop shadow
           ctx.fillStyle = colors.shadowAlpha2;
           ctx.fillRect(p.x - 3, p.y + 2, p.w + 6, p.h + 8);
           ctx.fillStyle = colors.shadowAlpha1;
@@ -1506,13 +1535,24 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           }
 
           ctx.restore();
+        }
 
-          // Page number label outside the sheet in the desk margin below
-          ctx.fillStyle = colors.pageLabel;
-          ctx.font = `600 ${12 / c.zoom}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-          ctx.textAlign = "center";
-          ctx.fillText(`Page ${i}`, p.x + p.w / 2, p.y + p.h + 20 / c.zoom);
-          ctx.textAlign = "start";
+        // Pass 2: Render page number labels in desk margin, perfectly centered in gap
+        ctx.fillStyle = colors.pageLabel;
+        const fontSize = Math.min(16, Math.max(11, 13 / Math.max(c.zoom, 0.7)));
+        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let i = 1; i <= countRef.current; i++) {
+          const p = getPageRect(i);
+          const labelY = p.y + p.h + PAGE_GAP / 2;
+
+          if (!rectsOverlap(viewLeft, viewTop, viewW, viewH, p.x, labelY - 20, p.w, 40)) {
+            continue;
+          }
+
+          ctx.fillText(`Page ${i}`, p.x + p.w / 2, labelY);
         }
 
         ctx.restore();
@@ -1538,7 +1578,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       const c = cam.current;
       const rect = getRect();
 
@@ -1552,6 +1592,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.setTransform(c.zoom * dpr, 0, 0, c.zoom * dpr, c.x * dpr, c.y * dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       if (modeRef.current === "notebook") {
         for (let i = 1; i <= countRef.current; i++) {
@@ -1632,7 +1674,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       const c = cam.current;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1640,6 +1682,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
       ctx.save();
       ctx.setTransform(c.zoom * dpr, 0, 0, c.zoom * dpr, c.x * dpr, c.y * dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       if (modeRef.current === "notebook") {
         const pRect = getPageRect(activeStrokePage.current);
@@ -1691,7 +1735,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (remoteCursors.current.length === 0) return;
@@ -1741,7 +1785,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (selection.current.size === 0) return;
 
@@ -1834,7 +1878,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getDpr();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const s = rubberStart.current;
@@ -1894,11 +1938,11 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       img.onload = () => {
         let w = img.naturalWidth;
         let h = img.naturalHeight;
-        const maxDim = 400;
-        if (w > maxDim || h > maxDim) {
-          const scale = maxDim / Math.max(w, h);
-          w *= scale;
-          h *= scale;
+        const maxDisplayDim = modeRef.current === "notebook" ? Math.min(PAGE_W * 0.85, 680) : 900;
+        if (w > maxDisplayDim || h > maxDisplayDim) {
+          const scale = maxDisplayDim / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
         }
         const rect = getRect();
         const center = screenToWorld(rect.width / 2, rect.height / 2);
@@ -2714,27 +2758,55 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     }));
 
     // -------------------------
-    //  Resize & Window Listeners
+    //  Resize & Window Listeners (HiDPI ResizeObserver)
     // -------------------------
 
     useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
       function resize() {
-        const container = containerRef.current;
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
+        const ctn = containerRef.current;
+        if (!ctn) return;
+        const rect = ctn.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const dpr = getDpr();
+        const targetW = Math.round(rect.width * dpr);
+        const targetH = Math.round(rect.height * dpr);
+
         for (const c of [bgRef.current, mainRef.current, drawRef.current, cursorsRef.current]) {
           if (!c) continue;
-          c.width = rect.width * dpr;
-          c.height = rect.height * dpr;
+          if (c.width !== targetW || c.height !== targetH) {
+            c.width = targetW;
+            c.height = targetH;
+          }
           c.style.width = rect.width + "px";
           c.style.height = rect.height + "px";
         }
         redrawAll();
       }
+
       resize();
+
+      const ro = new ResizeObserver(() => {
+        resize();
+      });
+      ro.observe(container);
+
       window.addEventListener("resize", resize);
-      return () => window.removeEventListener("resize", resize);
+      let mq: MediaQueryList | null = null;
+      try {
+        mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+        mq.addEventListener("change", resize);
+      } catch (e) {}
+
+      return () => {
+        ro.disconnect();
+        window.removeEventListener("resize", resize);
+        try {
+          if (mq) mq.removeEventListener("change", resize);
+        } catch (e) {}
+      };
     }, []);
 
     // -------------------------
@@ -2784,23 +2856,41 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           onBrushSizeChangeRef.current?.(newSize);
         }
 
-        // Fallback clipboard API paste
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
-          navigator.clipboard
-            ?.read()
-            ?.then((items) => {
-              for (const item of items) {
-                const imgType = item.types.find((t) => t.startsWith("image/"));
-                if (imgType) {
-                  item.getType(imgType).then((blob) => {
-                    const file = new File([blob], "pasted.png", { type: imgType });
-                    handleInsertImageFile(file);
-                  });
-                  return;
-                }
+        // Native & Web Clipboard paste (Ctrl+V / Cmd+V)
+        if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "v" || e.code === "KeyV")) {
+          const target = e.target as HTMLElement;
+          if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+            return;
+          }
+          e.preventDefault();
+
+          // 1. Try native desktop clipboard first (wl-paste / xclip via Tauri)
+          getNativeClipboardImage()
+            .then((dataUrl) => {
+              if (dataUrl) {
+                loadAndInsertImage(dataUrl);
+                return;
+              }
+              // 2. Fallback to standard web clipboard
+              if (navigator.clipboard?.read) {
+                navigator.clipboard
+                  .read()
+                  .then((items) => {
+                    for (const item of items) {
+                      const imgType = item.types.find((t) => t.startsWith("image/"));
+                      if (imgType) {
+                        item.getType(imgType).then((blob) => {
+                          const file = new File([blob], "pasted.png", { type: imgType });
+                          handleInsertImageFile(file);
+                        });
+                        return;
+                      }
+                    }
+                  })
+                  .catch(() => {});
               }
             })
-            ?.catch(() => {});
+            .catch(() => {});
         }
 
         // Delete selection
@@ -2851,11 +2941,11 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         }
       }
 
-      window.addEventListener("paste", onPaste);
+      document.addEventListener("paste", onPaste, true);
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("keyup", onKeyUp);
       return () => {
-        window.removeEventListener("paste", onPaste);
+        document.removeEventListener("paste", onPaste, true);
         window.removeEventListener("keydown", onKeyDown);
         window.removeEventListener("keyup", onKeyUp);
       };
@@ -2942,29 +3032,26 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       <div
         ref={containerRef}
         className="relative flex-1 overflow-hidden select-none"
-        style={{ contain: "strict", willChange: "transform" }}
+        style={{ contain: "strict" }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
         <canvas
           ref={bgRef}
           className="absolute inset-0 pointer-events-none"
-          style={{ willChange: "transform" }}
         />
         <canvas
           ref={mainRef}
           className="absolute inset-0 pointer-events-none"
-          style={{ willChange: "transform" }}
         />
         <canvas
           ref={cursorsRef}
           className="absolute inset-0 pointer-events-none"
-          style={{ willChange: "transform" }}
         />
         <canvas
           ref={drawRef}
           className="absolute inset-0"
-          style={{ touchAction: "none", willChange: "transform" }}
+          style={{ touchAction: "none" }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

@@ -21,3 +21,14 @@ export async function applyWindowDecorations(mode?: WindowDecorationsMode): Prom
     console.warn("Failed to set window decorations:", err);
   }
 }
+
+export async function getNativeClipboardImage(): Promise<string | null> {
+  if (!isDesktopApp()) return null;
+  try {
+    const result = await invoke<string | null>("read_clipboard_image");
+    return result || null;
+  } catch (err) {
+    console.warn("Failed to read native clipboard image:", err);
+    return null;
+  }
+}

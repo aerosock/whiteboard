@@ -228,6 +228,10 @@ export default function Dashboard({
     deleteLocalBoard(id);
     localStorage.removeItem(`wb_strokes_${id}`);
     localStorage.removeItem(`wb_images_${id}`);
+    localStorage.removeItem(`wb_undo_${id}`);
+    localStorage.removeItem(`wb_redo_${id}`);
+    localStorage.removeItem(`wb_cam_${id}`);
+    localStorage.removeItem(`wb_thumb_${id}`);
     setLocalBoards(getLocalBoards());
   }
 
@@ -316,16 +320,16 @@ export default function Dashboard({
               setNewBoardLayout("single");
               setIsCreateModalOpen(true);
             }}
-            className="group p-5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between space-y-4"
+            className="group p-5 rounded-xl bg-neutral-900 dark:bg-neutral-800 border border-neutral-800 dark:border-neutral-700 text-white shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between space-y-4"
           >
             <div className="space-y-2">
-              <div className="w-9 h-9 rounded-lg bg-neutral-800 dark:bg-neutral-200 flex items-center justify-center text-white dark:text-neutral-900">
+              <div className="w-9 h-9 rounded-lg bg-neutral-800 dark:bg-neutral-700 flex items-center justify-center text-white">
                 <Plus size={18} />
               </div>
-              <h3 className="text-base font-semibold tracking-tight">
+              <h3 className="text-base font-semibold tracking-tight text-white">
                 New Board
               </h3>
-              <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              <p className="text-xs text-neutral-300 dark:text-neutral-300">
                 Create an infinite whiteboard or paginated notebook with custom paper grids.
               </p>
             </div>
@@ -369,7 +373,7 @@ export default function Dashboard({
                 placeholder="e.g. abc-def"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
-                className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-mono rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600"
+                className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-mono rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600"
               />
               <button
                 type="submit"
@@ -469,12 +473,12 @@ export default function Dashboard({
                         <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                           {b.title}
                         </h4>
-                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 shrink-0">
+                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 shrink-0">
                           {b.mode}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
+                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
                         <Clock size={11} />
                         <span>{new Date(b.updatedAt).toLocaleDateString()}</span>
                         {b.mode === "notebook" && (
@@ -484,7 +488,7 @@ export default function Dashboard({
                     </div>
 
                     <div className="flex items-center justify-between pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px]">
-                      <span className="flex items-center gap-1 text-neutral-400 font-mono text-[10px]">
+                      <span className="flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-mono text-[10px]">
                         <HardDrive size={11} />
                         <span>Local</span>
                       </span>

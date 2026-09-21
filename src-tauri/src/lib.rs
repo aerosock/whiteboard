@@ -1,4 +1,5 @@
 use tauri::Manager;
+use base64::prelude::*;
 
 #[tauri::command]
 fn is_tiling_wm() -> bool {
@@ -33,11 +34,44 @@ fn set_window_decorations(window: tauri::Window, decorations: bool) -> Result<()
     window.set_decorations(decorations).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn read_clipboard_image() -> Option<String> {
+    #[cfg(target_os = "linux")]
+    {
+        // Try wl-paste first (standard on Wayland / Hyprland / Sway)
+        if let Ok(output) = std::process::Command::new("wl-paste")
+            .args(["-t", "image/png"])
+            .output()
+        {
+            if output.status.success() && !output.stdout.is_empty() {
+                let encoded = BASE64_STANDARD.encode(&output.stdout);
+                return Some(format!("data:image/png;base64,{}", encoded));
+            }
+        }
+
+        // Fallback to xclip (standard on X11 / XWayland)
+        if let Ok(output) = std::process::Command::new("xclip")
+            .args(["-selection", "clipboard", "-t", "image/png", "-o"])
+            .output()
+        {
+            if output.status.success() && !output.stdout.is_empty() {
+                let encoded = BASE64_STANDARD.encode(&output.stdout);
+                return Some(format!("data:image/png;base64,{}", encoded));
+            }
+        }
+    }
+    None
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![is_tiling_wm, set_window_decorations])
+        .invoke_handler(tauri::generate_handler![
+            is_tiling_wm,
+            set_window_decorations,
+            read_clipboard_image
+        ])
         .setup(|app| {
             if is_tiling_wm() {
                 if let Some(window) = app.get_webview_window("main") {
