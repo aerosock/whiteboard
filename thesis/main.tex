@@ -1,31 +1,21 @@
 % ==============================================================================
-% ŠABLONA MATURITNÍ PRÁCE S OBHAJOBOU (MPsO) — 2026 / 2027
+% ŠABLONA MATURITNÍ PRÁCE S OBHAJOBOU (MPsO)
 % Střední průmyslová škola a Gymnázium Na Třebešíně
 % ==============================================================================
-% Věrná rekonstrukce oficiální šablony 2026-27_SPSG_sablona_MPsO.dotx
-%
-% JAK TENTO SOUBOR ZKOMPILOVAT DO PDF:
-%   Možnost A (Online - nejjednodušší):
-%     Nahraj celou složku (main.tex + obrazky/logo_skoly.png) na https://www.overleaf.com
-%     a klikni na zelené tlačítko "Recompile".
-%   Možnost B (Lokálně v terminálu):
-%     pdflatex main.tex && pdflatex main.tex
-%     (kompiluje se 2× za sebou, aby se správně dopočítala čísla stran v Obsahu)
+% Přesná kopie oficiální šablony 2026-27_SPSG_sablona_MPsO.dotx 1:1
 % ==============================================================================
 
 \documentclass[12pt, a4paper, oneside]{article}
 
 % ------------------------------------------------------------------------------
-% 1. ÚDAJE O PRÁCI (UPRAV POUZE ZDE — AUTOMATICKY SE PROPÍŠÍ DO CELÉ PRÁCE!)
+% 1. ÚDAJE O PRÁCI (VÝCHOZÍ TEXT ZE ŠABLONY .DOTX)
 % ------------------------------------------------------------------------------
-\newcommand{\NazevPrace}{Návrh a implementace multiplatformní digitální tabule s AI asistentem}
-\newcommand{\NazevPraceVelkymi}{NÁVRH A IMPLEMENTACE MULTIPLATFORMNÍ DIGITÁLNÍ TABULE S AI ASISTENTEM}
+\newcommand{\NazevPrace}{Název práce}
+\newcommand{\NazevPraceVelkymi}{TÉMA (NÁZEV) MATURITNÍ PRÁCE}
 \newcommand{\Autor}{Jméno a příjmení}
-\newcommand{\Vedouci}{Jméno Příjmení}          % Na titulní straně a v anotaci (1. pád)
-\newcommand{\VedouciKomu}{panu Ing. Jménu Příjmení} % V poděkování (3. pád: panu / paní ...)
-\newcommand{\Trida}{4. X}
-\newcommand{\SkolniRok}{2026 / 2027}
-\newcommand{\DatumProhlaseni}{\today}          % Nebo pevné datum, např. 10. března 2027
+\newcommand{\Vedouci}{Jméno Příjmení}
+\newcommand{\Trida}{4.}
+\newcommand{\SkolniRok}{2025 / 2026}
 
 % ------------------------------------------------------------------------------
 % 2. KÓDOVÁNÍ, JAZYK A PÍSMA (Times New Roman 12pt + Arial pro nadpisy)
@@ -38,10 +28,10 @@
 \usepackage{tgtermes}
 % Bezpatkové písmo pro nadpisy a titulní stranu (Arial / Helvetica / TeX Gyre Heros)
 \usepackage{tgheros}
-% Neproporcionální písmo pro ukázky zdrojového kódu
+% Neproporcionální písmo pro kód
 \usepackage{tgcursor}
 
-% Mikrotypografie (zabraňuje přetékání dlouhých českých slov přes pravý okraj)
+% Mikrotypografie
 \usepackage{microtype}
 
 % ------------------------------------------------------------------------------
@@ -60,7 +50,7 @@
 \usepackage{setspace}
 \onehalfspacing
 
-% Odstavce bez odsazení prvního řádku, s mezerou 6pt za odstavcem (w:after="120")
+% Odstavce bez odsazení prvního řádku, mezera 6pt za odstavcem (w:after="120")
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 
@@ -73,10 +63,10 @@
 \renewcommand{\thepage}{- \arabic{page} -}
 
 \pagestyle{fancy}
-\fancyhf{} % Vymazat výchozí záhlaví a zápatí
-\renewcommand{\headrulewidth}{0pt} % Žádná linka v záhlaví
-\renewcommand{\footrulewidth}{0pt} % Žádná linka v zápatí
-\fancyfoot[C]{\normalfont\fontsize{12pt}{14pt}\selectfont \thepage} % Číslo strany uprostřed dole
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\normalfont\fontsize{12pt}{14pt}\selectfont \thepage}
 
 % ------------------------------------------------------------------------------
 % 5. FORMÁTOVÁNÍ NADPISŮ (přesně podle stylů Nadpis 1–5 v šabloně .dotx)
@@ -89,7 +79,7 @@
 % Zobrazení v obsahu do 3. úrovně (2.1.1)
 \setcounter{tocdepth}{3}
 
-% Každá hlavní kapitola (\section) začíná automaticky na nové stránce
+% Každá hlavní kapitola (\section) začíná na nové stránce
 \preto{\section}{\clearpage}
 
 % Nadpis 1 (\section): 16pt, bezpatkové (Arial), tučné, mezera za 12pt
@@ -122,7 +112,7 @@
     {}{0pt}{}
 \titlespacing*{\subparagraph}{0pt}{6pt}{4pt}
 
-% Vlastní příkaz pro "Nadpis mimo obsah" (Čestné prohlášení, Poděkování, Abstrakt, Obsah...)
+% Nadpis mimo obsah (Čestné prohlášení, Poděkování, Abstrakt, Obsah...)
 % V šabloně .dotx: 14pt, bezpatkové (Arial), tučné, nečíslovaný, nezobrazuje se v obsahu
 \newcommand{\nadpismimoobsah}[1]{%
     \vspace{6pt}%
@@ -131,10 +121,9 @@
 }
 
 % ------------------------------------------------------------------------------
-% 6. OBSAH A SEZNAM OBRÁZKŮ (tečkované vodící linky, přesné odsazení)
+% 6. OBSAH A SEZNAM OBRÁZKŮ (vodící linky a odsazení dle .dotx)
 % ------------------------------------------------------------------------------
 \makeatletter
-% Dostatečná šířka sloupce pro čísla stran ve formátu "- 10 -"
 \renewcommand{\@pnumwidth}{3.2em}
 \renewcommand{\@tocrmarg}{4.0em}
 
@@ -154,22 +143,19 @@
     \endgroup
   \fi}
 
-% Položky v Seznamu obrázků ("Obrázek 1: Název ...... - 8 -")
+% Položky v Seznamu obrázků ("Obrázek 1: Název ...... - 3 -")
 \renewcommand*\l@figure[2]{%
   \@dottedtocline{1}{0pt}{5.5em}{Obrázek~#1}{#2}}
 \makeatother
 
 % ------------------------------------------------------------------------------
-% 7. OBRÁZKY, TABULKY, MATEMATIKA, KÓD A ODKAZY
+% 7. BALÍČKY PRO GRAFIKU, ODKAZY A POPISKY
 % ------------------------------------------------------------------------------
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{booktabs}
-\usepackage{amsmath, amssymb}
 \usepackage{url}
-\usepackage{xcolor}
 
-% Popisky obrázků a tabulek: 12pt, kurzíva, zarovnáno na střed ("Obr. 1: popis")
+% Popisky obrázků: 12pt, kurzíva, zarovnáno na střed ("Obr. 1: popis")
 \usepackage[
     font={it},
     labelfont={it},
@@ -177,60 +163,20 @@
     justification=centering
 ]{caption}
 
-% Přejmenování výchozích českých popisků podle šablony .dotx
 \addto\captionsczech{%
     \renewcommand{\figurename}{Obr.}%
-    \renewcommand{\tablename}{Tab.}%
 }
 
-% Nastavení pro vkládání zdrojového kódu (\begin{lstlisting} ... \end{lstlisting})
-\usepackage{listings}
-\definecolor{codebg}{HTML}{F7F7F9}
-\definecolor{codeframe}{HTML}{D0D7DE}
-\definecolor{codekw}{HTML}{0550AE}
-\definecolor{codecomment}{HTML}{6E7781}
-\definecolor{codestr}{HTML}{0A3069}
-
-\lstset{
-    backgroundcolor=\color{codebg},
-    basicstyle=\ttfamily\small\setstretch{1.15},
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    commentstyle=\color{codecomment}\itshape,
-    frame=single,
-    rulecolor=\color{codeframe},
-    keepspaces=true,
-    keywordstyle=\color{codekw}\bfseries,
-    numbers=left,
-    numbersep=8pt,
-    numberstyle=\tiny\color{codecomment},
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    stringstyle=\color{codestr},
-    tabsize=2,
-    literate=% Podpora české diakritiky uvnitř bloků kódu
-        {á}{{\'a}}1 {č}{{\v{c}}}1 {ď}{{\v{d}}}1 {é}{{\'e}}1 {ě}{{\v{e}}}1
-        {í}{{\'i}}1 {ň}{{\v{n}}}1 {ó}{{\'o}}1 {ř}{{\v{r}}}1 {š}{{\v{s}}}1
-        {ť}{{\v{t}}}1 {ú}{{\'u}}1 {ů}{{\r{u}}}1 {ý}{{\'y}}1 {ž}{{\v{z}}}1
-        {Á}{{\'A}}1 {Č}{{\v{C}}}1 {Ď}{{\v{D}}}1 {É}{{\'E}}1 {Ě}{{\v{E}}}1
-        {Í}{{\'I}}1 {Ň}{{\v{N}}}1 {Ó}{{\'O}}1 {Ř}{{\v{R}}}1 {Š}{{\v{S}}}1
-        {Ť}{{\v{T}}}1 {Ú}{{\'U}}1 {Ů}{{\r{U}}}1 {Ý}{{\'Y}}1 {Ž}{{\v{Z}}}1
-}
-\renewcommand{\lstlistingname}{Ukázka kódu}
-
-% Klikací odkazy v PDF (bez rušivých barevných rámečků)
+% Klikací odkazy v PDF
 \usepackage[hypertexnames=false, hidelinks, unicode]{hyperref}
 
 
 % ==============================================================================
-% ZAČÁTEK DOKUMENTU
+% DOKUMENT (PŘESNĚ DLE STRAN ŠABLONY .DOTX)
 % ==============================================================================
 \begin{document}
 
-% První 4 strany (Titulní list, Zadání, Prohlášení, Poděkování) NEMAJÍ číslo stránky,
-% ale započítávají se do celkového číslování (anotace tak začne na straně "- 5 -").
+% Strany 1–4 nemají zobrazené číslo strany
 \pagestyle{empty}
 
 % ------------------------------------------------------------------------------
@@ -242,7 +188,6 @@
     {\sffamily\bfseries\fontsize{16pt}{20pt}\selectfont MATURITNÍ PRÁCE S~OBHAJOBOU\par}
 
     \vspace{1.2cm}
-    % Logo školy (nahráno ze šablony .dotx)
     \includegraphics[width=5.6cm]{obrazky/logo_skoly.png}
 
     \vspace{2.2cm}
@@ -251,7 +196,6 @@
 
 \vfill
 
-% Tabulka údajů v dolní části titulního listu (bezpatkové písmo 10pt dle .dotx)
 {\sffamily\fontsize{10pt}{14pt}\selectfont
 \begin{tabular}{@{}p{3.5cm}l@{}}
     Vypracoval: & \Autor \\[6pt]
@@ -265,11 +209,8 @@
 \clearpage
 
 % ------------------------------------------------------------------------------
-% STRANA 2: ZADÁNÍ MATURITNÍ PRÁCE
+% STRANA 2: ZADÁNÍ
 % ------------------------------------------------------------------------------
-% POZNÁMKA: Před odevzdáním práce tuto stránku buď při tisku vyměníš za originál
-% podepsaného zadání, nebo sem vložíš naskenované PDF příkazem:
-%   \usepackage{pdfpages} (v preambuli) a zde \includepdf[pages=1]{zadani.pdf}
 {\sffamily\fontsize{12pt}{15pt}\selectfont VLOŽIT NASKENOVANÉ ZADÁNÍ}
 
 \clearpage
@@ -277,14 +218,14 @@
 % ------------------------------------------------------------------------------
 % STRANA 3: ČESTNÉ PROHLÁŠENÍ
 % ------------------------------------------------------------------------------
-\vspace*{7.5cm} % Posun do spodní poloviny stránky přesně podle šablony .dotx
+\vspace*{7.5cm}
 
 \nadpismimoobsah{Čestné prohlášení}
 
-Prohlašuji, že jsem maturitní práci na téma \textit{\NazevPrace} vypracoval samostatně s~využitím odborné literatury a~pramenů uvedených v~přiloženém seznamu využitých zdrojů.
+Prohlašuji, že jsem maturitní práci na téma \makebox[3.8cm]{\dotfill} vypracoval(a) samostatně s~využitím odborné literatury a~pramenů uvedených v~přiloženém seznamu využitých zdrojů.
 
 \vspace{1.2cm}
-V~Praze dne: \DatumProhlaseni
+V~Praze dne: 
 
 \vspace{1.8cm}
 \textit{Podpis autora}
@@ -294,16 +235,16 @@ V~Praze dne: \DatumProhlaseni
 % ------------------------------------------------------------------------------
 % STRANA 4: PODĚKOVÁNÍ
 % ------------------------------------------------------------------------------
-\vspace*{6.5cm} % Posun do středu stránky přesně podle šablony .dotx
+\vspace*{6.5cm}
 
 \nadpismimoobsah{Poděkování}
 
-Děkuji tímto vedoucímu maturitní práce Ssofjsdf za cenné připomínky a~odborné rady při vypracovávání.
+Děkuji tímto vedoucímu (vedoucí) maturitní práce panu (paní) \makebox[3.8cm]{\dotfill} za cenné připomínky a~odborné rady při vypracovávání.
 
 \clearpage
 
 % ==============================================================================
-% OD STRANY 5 SE ZAPÍNÁ ČÍSLOVÁNÍ STRAN DOLE UPROSTŘED ("- 5 -")
+% OD STRANY 5: ČÍSLOVÁNÍ STRAN DOLE UPROSTŘED ("- 5 -")
 % ==============================================================================
 \pagestyle{fancy}
 \setcounter{page}{5}
@@ -312,19 +253,19 @@ Děkuji tímto vedoucímu maturitní práce Ssofjsdf za cenné připomínky a~od
 % STRANA 5: ANOTAČNÍ LIST (ČESKY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Název práce:}
-\NazevPrace
+Název práce
 
 \nadpismimoobsah{Autor:}
-\Autor
+Autor práce
 
 \nadpismimoobsah{Vedoucí práce:}
-\Vedouci
+Vedoucí práce
 
 \nadpismimoobsah{Abstrakt}
-Tato maturitní práce se zabývá návrhem a~implementací multiplatformní aplikace digitální tabule (whiteboardu) s~integrovaným asistentem založeným na umělé inteligenci. Cílem práce je vytvořit výkonné prostředí s~nekonečným plátnem pro psaní poznámek, kreslení a~vizuální organizaci studia, které funguje jak ve webovém prohlížeči, tak jako nativní desktopová aplikace postavená na frameworku Tauri. Teoretická část představuje principy vykreslování grafiky na plátno HTML5 Canvas, architekturu klient--server se synchronizací stavu a~možnosti využití velkých jazykových modelů (LLM) ve vzdělávání. Praktická část popisuje samotnou implementaci aplikace v~jazycích TypeScript a~Rust, optimalizaci vykreslovacího jádra, návrh datového úložiště a~integraci AI asistenta pro vysvětlování látky a~generování procvičovacích úloh.
+Krátký souhrn, o čem práce pojednává
 
 \nadpismimoobsah{Klíčová slova}
-digitální tabule, whiteboard, Tauri, React, TypeScript, Rust, HTML5 Canvas, umělá inteligence
+Klíčová slova
 
 \clearpage
 
@@ -332,10 +273,10 @@ digitální tabule, whiteboard, Tauri, React, TypeScript, Rust, HTML5 Canvas, um
 % STRANA 6: ANOTAČNÍ LIST (ANGLICKY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Summary}
-This graduation thesis focuses on the design and implementation of a~cross-platform digital whiteboard application featuring an integrated artificial intelligence assistant. The goal of the thesis is to create a~high-performance infinite-canvas environment for note-taking, drawing, and visual study organization that operates both as a~web application and as a~native desktop application built on the Tauri framework. The theoretical part introduces the principles of 2D rendering on the HTML5 Canvas, client-server state synchronization architecture, and the application of Large Language Models (LLMs) in education. The practical part describes the implementation of the application in TypeScript and Rust, rendering engine optimizations, local and remote storage design, and the integration of the AI assistant for concept explanation and practice exercise generation.
+Souhrn přeložený do AJ 
 
 \nadpismimoobsah{Keywords}
-digital whiteboard, infinite canvas, Tauri, React, TypeScript, Rust, HTML5 Canvas, artificial intelligence
+Klíčová slova v angličtině
 
 \clearpage
 
@@ -349,167 +290,42 @@ digital whiteboard, infinite canvas, Tauri, React, TypeScript, Rust, HTML5 Canva
 
 \clearpage
 
-
-% ==============================================================================
-% HLAVNÍ TEXT PRÁCE (KAPITOLY)
-% ==============================================================================
-
 % ------------------------------------------------------------------------------
-% 1 ÚVOD
+% STRANA 8+: TEXT PRÁCE (PŘESNĚ DLE ŠABLONY .DOTX)
 % ------------------------------------------------------------------------------
 \section{Úvod}
-\label{sec:uvod}
-
-V~dnešní době prochází způsob, jakým studenti a~vývojáři pracují s~informacemi, výraznou proměnou. Tradiční lineární textové editory často nestačí při řešení komplexních problémů, matematických výpočtů nebo architektonických návrhů, kde je klíčové prostorové uspořádání myšlenek, ruční kreslení schémat a~okamžitá zpětná vazba.
-
-% Ukázka odkazu na obrázek v textu a vložení obrázku:
-% Všechny obrázky v práci musí být očíslované a musí na ně vést odkaz z textu (viz Obr. \ref{fig:ukazka}).
-Jako ilustrace vložení obrázku v~LaTeXu slouží Obr.~\ref{fig:ukazka}, na který se v~textu odkazujeme pomocí příkazu \texttt{\textbackslash ref}.
+Text úvodu…
 
 \begin{figure}[H]
     \centering
-    % Nahraď za vlastní screenshot nebo schéma (např. obrazky/architektura.png)
-    \includegraphics[width=0.35\textwidth]{obrazky/logo_skoly.png}
-    \caption{Ukázkový obrázek (např. úvodní schéma architektury aplikace)}
-    \label{fig:ukazka}
+    % Placeholder pro obrázek
+    \caption{např. Úvodní schéma}
 \end{figure}
 
-\subsection{Cíle práce}
-\label{sec:cile}
+\section{Kapitola}
 
-Hlavním cílem této práce je navrhnout a~implementovat multiplatformní aplikaci digitální tabule s~následujícími klíčovými vlastnostmi:
-\begin{itemize}
-    \item plynulé vykreslování na nekonečném plátně (infinite canvas) s~podporou stránek a~historie kroků (Undo/Redo),
-    \item provoz ve formě webové aplikace i~nativní desktopové aplikace s~nízkou odezvou díky využití technologií Tauri a~Rust,
-    \item obousměrná synchronizace dat mezi lokálním úložištěm a~serverem pomocí protokolu WebSocket,
-    \item integrace asistenta umělé inteligence schopného vysvětlovat vyznačenou látku a~generovat procvičovací úlohy přímo na plátně.
-\end{itemize}
+\subsection{Kapitola}
 
+\subsubsection{Kapitola}
 
-% ------------------------------------------------------------------------------
-% 2 TEORETICKÁ ČÁST
-% ------------------------------------------------------------------------------
-\section{Teoretická východiska}
-\label{sec:teorie}
+\paragraph{Kapitola}
 
-Tato kapitola se věnuje teoretickému základu technologií a~principů využitých při vývoji aplikace. V~textu se na odborné zdroje odkazujeme číslem v~hranatých závorkách, například dokumentace frameworku React~\cite{react_docs} nebo Tauri~\cite{tauri_docs}.
+\subparagraph{Podnadpis}
 
-\subsection{Principy vykreslování 2D grafiky na nekonečném plátně}
-\label{sec:canvas_teorie}
+\clearpage
 
-Při implementaci nekonečného plátna je nutné převádět souřadnice obrazovky (screen space) na souřadnice virtuálního světa (world space) pomocí afinní transformace posunu a~měřítka:
-\begin{equation}
-    x_{\text{world}} = \frac{x_{\text{screen}} - t_x}{s}, \qquad
-    y_{\text{world}} = \frac{y_{\text{screen}} - t_y}{s}
-    \label{eq:transformace}
-\end{equation}
-kde $(t_x, t_y)$ představuje vektor posunu kamery (pan) a~$s$ koeficient přiblížení (zoom).
-
-\subsubsection{Vyhlazování tahů a práce s hustotou pixelů (DPI)}
-Pro dosažení ostrého obrazu na monitorech s~vysokým rozlišením je nezbytné škálovat vnitřní vyrovnávací paměť plátna poměrem \texttt{window.devicePixelRatio}.
-
-\paragraph{Kapitola čtvrté úrovně (Nadpis 4)}
-Ukázka nadpisu čtvrté úrovně (\texttt{\textbackslash paragraph}), pokud je potřeba jít do větší hloubky.
-
-\subparagraph{Podnadpis (Nadpis 5)}
-Ukázka nečíslovaného podnadpisu páté úrovně (\texttt{\textbackslash subparagraph}) dle šablony.
-
-\subsection{Použité technologie}
-\label{sec:technologie}
-
-Přehled klíčových technologií použitých v~projektu shrnuje Tab.~\ref{tab:technologie}.
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{@{}lll@{}}
-        \toprule
-        \textbf{Vrstva} & \textbf{Technologie} & \textbf{Účel v projektu} \\
-        \midrule
-        Frontend        & React 19 + TypeScript & Uživatelské rozhraní a vykreslování plátna \\
-        Desktop jádro   & Tauri v2 + Rust       & Nativní okno, systémová schránka, optimalizace \\
-        Backend server  & Node.js + Express     & REST API, WebSocket synchronizace \\
-        Databáze        & SQLite + IndexedDB    & Serverové a offline klientské úložiště \\
-        \bottomrule
-    \end{tabular}
-    \caption{Přehled technologického stacku aplikace}
-    \label{tab:technologie}
-\end{table}
-
-
-% ------------------------------------------------------------------------------
-% 3 PRAKTICKÁ ČÁST (VLASTNÍ PRÁCE)
-% ------------------------------------------------------------------------------
-\section{Vlastní práce}
-\label{sec:vlastni_prace}
-
-V~praktické části je popsán postup návrhu architektury, implementace jednotlivých modulů a~řešení technických problémů, které se v~průběhu vývoje vyskytly.
-
-\subsection{Architektura aplikace}
-\label{sec:architektura}
-
-Zde popíšeš strukturu projektu, komunikaci mezi klientem a~serverem a~životní cyklus nástěnky.
-
-\subsection{Implementace vykreslovacího jádra}
-\label{sec:implementace_canvas}
-
-Ukázka vložení zdrojového kódu pomocí prostředí \texttt{lstlisting}:
-
-\begin{lstlisting}[language=Java, caption={Přepočet rozlišení plátna podle hustoty pixelů obrazovky (DPI)}, label={lst:dpi}]
-const dpr = window.devicePixelRatio || 1;
-canvas.width = Math.round(rect.width * dpr);
-canvas.height = Math.round(rect.height * dpr);
-ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-\end{lstlisting}
-
-
-% ------------------------------------------------------------------------------
-% 4 ZÁVĚR
-% ------------------------------------------------------------------------------
 \section{Závěr}
-\label{sec:zaver}
+Závěr…
 
-V~závěru shrneš, jak se podařilo naplnit cíle stanovené v~úvodu (kapitola~\ref{sec:cile}), jaké problémy jsi během vývoje vyřešil a~jaké jsou možnosti dalšího rozvoje projektu do budoucna.
+\clearpage
 
-
-% ------------------------------------------------------------------------------
-% 5 SEZNAM OBRÁZKŮ (v šabloně .dotx je číslovaný jako hlavní kapitola!)
-% ------------------------------------------------------------------------------
 \section{Seznam obrázků}
-\label{sec:seznam_obrazku}
-
 \makeatletter
 \@starttoc{lof}
 \makeatother
 
+\clearpage
 
-% ------------------------------------------------------------------------------
-% 6 SEZNAM VYUŽITÝCH ZDROJŮ (ČSN ISO 690)
-% ------------------------------------------------------------------------------
 \section{Seznam využitých zdrojů}
-\label{sec:zdroje}
-
-% Přepnutí nadpisu bibliografie tak, aby nevytvářel duplicitní nadpis (nadpis už tvoří \section výše)
-\begingroup
-\renewcommand{\section}[2]{}%
-\begin{thebibliography}{99}
-
-    \bibitem{react_docs}
-    META PLATFORMS. \textit{React Documentation} [online]. 2026 [cit. 2026-10-19].
-    Dostupné z: \url{https://react.dev/}
-
-    \bibitem{tauri_docs}
-    TAURI CONTRIBUTORS. \textit{Tauri 2.0 Documentation} [online]. 2026 [cit. 2026-10-19].
-    Dostupné z: \url{https://v2.tauri.app/}
-
-    \bibitem{mdn_canvas}
-    MOZILLA CONTRIBUTORS. \textit{Canvas API -- Web APIs | MDN} [online]. 2026 [cit. 2026-10-19].
-    Dostupné z: \url{https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API}
-
-    \bibitem{rust_book}
-    KLABNIK, Steve a Carol NICHOLS. \textit{The Rust Programming Language} [online]. San Francisco: No Starch Press, 2023 [cit. 2026-10-19]. ISBN 978-1-7185-0310-6.
-    Dostupné z: \url{https://doc.rust-lang.org/book/}
-
-\end{thebibliography}
-\endgroup
 
 \end{document}
