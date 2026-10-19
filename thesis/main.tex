@@ -37,7 +37,7 @@
 % Patkové písmo pro běžný text (Times New Roman / TeX Gyre Termes)
 \usepackage{tgtermes}
 % Bezpatkové písmo pro nadpisy a titulní stranu (Arial / Helvetica / TeX Gyre Heros)
-\usepackage[scaled=0.95]{tgheros}
+\usepackage{tgheros}
 % Neproporcionální písmo pro ukázky zdrojového kódu
 \usepackage{tgcursor}
 
@@ -133,23 +133,31 @@
 % ------------------------------------------------------------------------------
 % 6. OBSAH A SEZNAM OBRÁZKŮ (tečkované vodící linky, přesné odsazení)
 % ------------------------------------------------------------------------------
-\usepackage{tocloft}
-
+\makeatletter
 % Dostatečná šířka sloupce pro čísla stran ve formátu "- 10 -"
-\cftsetpnumwidth{3.2em}
-\cftsetrmarg{4.0em}
+\renewcommand{\@pnumwidth}{3.2em}
+\renewcommand{\@tocrmarg}{4.0em}
 
-% Vzhled tečkovaných linek v Obsahu i pro hlavní kapitoly (1 Úvod ...... - 8 -)
-\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
-\renewcommand{\cftsecfont}{\normalfont}
-\renewcommand{\cftsecpagefont}{\normalfont}
-\setlength{\cftbeforesecskip}{4pt}
+% Tečkované vodící linky v Obsahu pro \section (stejně jako u podkapitol)
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{4pt \@plus\p@}%
+    \setlength\@tempdima{1.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\leaders\hbox{$\m@th\mkern \@dotsep mu\hbox{.}\mkern \@dotsep mu$}\hfill\nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
 
-% Vzhled položek v Seznamu obrázků ("Obrázek 1: Název ...... - 8 -")
-\renewcommand{\cftfigpresnum}{Obrázek~}
-\renewcommand{\cftfigaftersnum}{: }
-\setlength{\cftfignumwidth}{6.2em}
-\renewcommand{\cftfigleader}{\cftdotfill{\cftdotsep}}
+% Položky v Seznamu obrázků ("Obrázek 1: Název ...... - 8 -")
+\renewcommand*\l@figure[2]{%
+  \@dottedtocline{1}{0pt}{5.5em}{Obrázek~#1}{#2}}
+\makeatother
 
 % ------------------------------------------------------------------------------
 % 7. OBRÁZKY, TABULKY, MATEMATIKA, KÓD A ODKAZY
@@ -290,7 +298,7 @@ V~Praze dne: \DatumProhlaseni
 
 \nadpismimoobsah{Poděkování}
 
-Děkuji tímto vedoucímu maturitní práce \VedouciKomu\ za cenné připomínky a~odborné rady při vypracovávání.
+Děkuji tímto vedoucímu maturitní práce Ssofjsdf za cenné připomínky a~odborné rady při vypracovávání.
 
 \clearpage
 
