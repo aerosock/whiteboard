@@ -1,0 +1,761 @@
+% ==============================================================================
+% MATURITNÍ PRÁCE S OBHAJOBOU (MPsO) — ROZPRACOVANÁ VERZE S TEORETICKOU ČÁSTÍ
+% Střední průmyslová škola a Gymnázium Na Třebešíně
+% Autor: Kostiantyn Kudinov (4.G) | Vedoucí: Mgr. Jan Souhrada | 2026 / 2027
+% ==============================================================================
+
+\documentclass[12pt, a4paper, oneside]{article}
+
+% ------------------------------------------------------------------------------
+% 1. ÚDAJE O PRÁCI
+% ------------------------------------------------------------------------------
+\newcommand{\NazevPrace}{Interaktivní digitální poznámkový blok s~integrovaným AI asistentem pro výuku}
+\newcommand{\NazevPraceVelkymi}{INTERAKTIVNÍ DIGITÁLNÍ POZNÁMKOVÝ BLOK S~INTEGROVANÝM AI ASISTENTEM PRO VÝUKU}
+\newcommand{\Autor}{Kostiantyn Kudinov}
+\newcommand{\Vedouci}{Mgr. Jan Souhrada}
+\newcommand{\Trida}{4.G}
+\newcommand{\SkolniRok}{2026 / 2027}
+
+% ------------------------------------------------------------------------------
+% 2. KÓDOVÁNÍ, JAZYK A PÍSMA (Times New Roman 12pt + Arial pro nadpisy)
+% ------------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[czech]{babel}
+
+% Patkové písmo pro běžný text (Times New Roman / TeX Gyre Termes)
+\usepackage{tgtermes}
+% Bezpatkové písmo pro nadpisy a titulní stranu (Arial / Helvetica / TeX Gyre Heros)
+\usepackage{tgheros}
+% Neproporcionální písmo pro kód
+\usepackage{tgcursor}
+
+% Mikrotypografie
+\usepackage{microtype}
+
+% ------------------------------------------------------------------------------
+% 3. OKRAJE STRÁNKY A ŘÁDKOVÁNÍ (přesně dle .dotx: okraje 2,5 cm, řádkování 1,5)
+% ------------------------------------------------------------------------------
+\usepackage[
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm,
+    footskip=1.25cm
+]{geometry}
+
+% Řádkování 1,5 (odpovídá w:line="360" ve Wordu)
+\usepackage{setspace}
+\onehalfspacing
+
+% Odstavce bez odsazení prvního řádku, mezera 6pt za odstavcem (w:after="120")
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ------------------------------------------------------------------------------
+% 4. ZÁHLAVÍ, ZÁPATÍ A ČÍSLOVÁNÍ STRAN (formát "- 5 -" od 5. strany)
+% ------------------------------------------------------------------------------
+\usepackage{fancyhdr}
+
+% Formát čísla stránky s pomlčkami (odpovídá w:fmt="numberInDash" v šabloně .dotx)
+\renewcommand{\thepage}{- \arabic{page} -}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\normalfont\fontsize{12pt}{14pt}\selectfont \thepage}
+
+% ------------------------------------------------------------------------------
+% 5. FORMÁTOVÁNÍ NADPISŮ (přesně podle stylů Nadpis 1–5 v šabloně .dotx)
+% ------------------------------------------------------------------------------
+\usepackage{titlesec}
+\usepackage{etoolbox}
+
+% Číslování nadpisů až do 4. úrovně (2.1.1.1)
+\setcounter{secnumdepth}{4}
+% Zobrazení v obsahu do 3. úrovně (2.1.1)
+\setcounter{tocdepth}{3}
+
+% Každá hlavní kapitola (\section) začíná na nové stránce
+\preto{\section}{\clearpage}
+
+% Nadpis 1 (\section): 16pt, bezpatkové (Arial), tučné, mezera za 12pt
+\titleformat{\section}
+    {\normalfont\fontsize{16pt}{20pt}\selectfont\sffamily\bfseries}
+    {\thesection}{0.75em}{}
+\titlespacing*{\section}{0pt}{0pt}{12pt}
+
+% Nadpis 2 (\subsection): 14pt, bezpatkové (Arial), tučné + kurzíva, před 12pt, za 6pt
+\titleformat{\subsection}
+    {\normalfont\fontsize{14pt}{18pt}\selectfont\sffamily\bfseries\itshape}
+    {\thesubsection}{0.75em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% Nadpis 3 (\subsubsection): 12pt, bezpatkové (Arial), tučné, před 6pt, za 6pt
+\titleformat{\subsubsection}
+    {\normalfont\fontsize{12pt}{15pt}\selectfont\sffamily\bfseries}
+    {\thesubsubsection}{0.75em}{}
+\titlespacing*{\subsubsection}{0pt}{6pt}{6pt}
+
+% Nadpis 4 (\paragraph): 13pt, bezpatkové (Arial), tučné, samostatný řádek
+\titleformat{\paragraph}[hang]
+    {\normalfont\fontsize{13pt}{16pt}\selectfont\sffamily\bfseries}
+    {\theparagraph}{0.75em}{}
+\titlespacing*{\paragraph}{0pt}{6pt}{6pt}
+
+% Nadpis 5 / Podnadpis (\subparagraph): 12pt, bezpatkové (Arial), tučné, nečíslovaný
+\titleformat{\subparagraph}[hang]
+    {\normalfont\fontsize{12pt}{15pt}\selectfont\sffamily\bfseries}
+    {}{0pt}{}
+\titlespacing*{\subparagraph}{0pt}{6pt}{4pt}
+
+% Nadpis mimo obsah (Čestné prohlášení, Poděkování, Abstrakt, Obsah...)
+\newcommand{\nadpismimoobsah}[1]{%
+    \vspace{6pt}%
+    {\normalfont\fontsize{14pt}{18pt}\selectfont\sffamily\bfseries #1\par}%
+    \vspace{2pt}%
+}
+
+% ------------------------------------------------------------------------------
+% 6. OBSAH A SEZNAM OBRÁZKŮ (vodící linky a odsazení dle .dotx)
+% ------------------------------------------------------------------------------
+\makeatletter
+\renewcommand{\@pnumwidth}{3.2em}
+\renewcommand{\@tocrmarg}{4.0em}
+\renewcommand{\@dotsep}{1.5}
+
+% Tečkované vodící linky v Obsahu pro \section (stejně jako u podkapitol)
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{4pt \@plus\p@}%
+    \setlength\@tempdima{1.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\leaders\hbox{$\m@th\mkern \@dotsep mu\hbox{.}\mkern \@dotsep mu$}\hfill\nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+
+% Položky v Seznamu obrázků ("Obrázek 1: Název ...... - 8 -")
+\renewcommand*\l@figure[2]{%
+  \ifnum \c@lofdepth >\z@
+    \vskip 2pt \@plus.2\p@
+    {\leftskip 0pt\relax \rightskip \@tocrmarg \parfillskip -\rightskip
+     \parindent 0pt\relax\@afterindenttrue
+     \interlinepenalty\@M
+     \leavevmode
+     \def\numberline##1{Obrázek~##1:~}%
+     #1\nobreak\leaders\hbox{$\m@th\mkern \@dotsep mu\hbox{.}\mkern \@dotsep mu$}\hfill\nobreak\hb@xt@\@pnumwidth{\hss #2}\par}%
+  \fi}
+\makeatother
+
+% ------------------------------------------------------------------------------
+% 7. BALÍČKY PRO GRAFIKU, MATEMATIKU, TABULKY, ODKAZY A POPISKY
+% ------------------------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath, amssymb}
+\usepackage{url}
+\usepackage{xcolor}
+
+% Popisky obrázků a tabulek: 12pt, kurzíva, zarovnáno na střed ("Obr. 1: popis")
+\usepackage[
+    font={it},
+    labelfont={it},
+    labelsep=colon,
+    justification=centering
+]{caption}
+
+\addto\captionsczech{%
+    \renewcommand{\figurename}{Obr.}%
+    \renewcommand{\tablename}{Tab.}%
+}
+
+% Klikací odkazy v PDF
+\usepackage[hypertexnames=false, hidelinks, unicode]{hyperref}
+
+
+% ==============================================================================
+% DOKUMENT
+% ==============================================================================
+\begin{document}
+
+% Strany 1–4 nemají zobrazené číslo strany
+\pagestyle{empty}
+
+% ------------------------------------------------------------------------------
+% STRANA 1: TITULNÍ LIST
+% ------------------------------------------------------------------------------
+\begin{center}
+    {\sffamily\fontsize{12pt}{15pt}\selectfont Střední průmyslová škola a~Gymnázium Na Třebešíně\par}
+    \vspace{6pt}
+    {\sffamily\bfseries\fontsize{16pt}{20pt}\selectfont MATURITNÍ PRÁCE S~OBHAJOBOU\par}
+
+    \vspace{1.2cm}
+    \includegraphics[width=5.6cm]{obrazky/logo_skoly.png}
+
+    \vspace{2.2cm}
+    {\sffamily\bfseries\fontsize{16pt}{22pt}\selectfont \NazevPraceVelkymi\par}
+\end{center}
+
+\vfill
+
+{\sffamily\fontsize{10pt}{14pt}\selectfont
+\begin{tabular}{@{}p{3.5cm}l@{}}
+    Vypracoval: & \Autor \\[6pt]
+    Vedoucí:    & \Vedouci \\[6pt]
+    Třída:      & \Trida \\[6pt]
+    Školní rok: & \SkolniRok \\
+\end{tabular}
+}
+
+\vspace{0.5cm}
+\clearpage
+
+% ------------------------------------------------------------------------------
+% STRANA 2: ZADÁNÍ
+% ------------------------------------------------------------------------------
+\includegraphics[width=\textwidth]{obrazky/zadani.png}
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% STRANA 3: ČESTNÉ PROHLÁŠENÍ
+% ------------------------------------------------------------------------------
+\vspace*{7.5cm}
+
+\nadpismimoobsah{Čestné prohlášení}
+
+Prohlašuji, že jsem maturitní práci na téma \NazevPrace\ vypracoval samostatně s~využitím odborné literatury a~pramenů uvedených v~přiloženém seznamu využitých zdrojů.
+
+\vspace{1.2cm}
+V~Praze dne: 
+
+\vspace{1.8cm}
+\textit{Podpis autora}
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% STRANA 4: PODĚKOVÁNÍ
+% ------------------------------------------------------------------------------
+\vspace*{6.5cm}
+
+\nadpismimoobsah{Poděkování}
+
+Děkuji tímto vedoucímu maturitní práce panu Mgr.~Janu Souhradovi za cenné připomínky a~odborné rady při vypracovávání.
+
+\clearpage
+
+% ==============================================================================
+% OD STRANY 5: ČÍSLOVÁNÍ STRAN DOLE UPROSTŘED ("- 5 -")
+% ==============================================================================
+\pagestyle{fancy}
+\setcounter{page}{5}
+
+% ------------------------------------------------------------------------------
+% STRANA 5: ANOTAČNÍ LIST (ČESKY)
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Název práce:}
+\NazevPrace
+
+\nadpismimoobsah{Autor:}
+\Autor
+
+\nadpismimoobsah{Vedoucí práce:}
+\Vedouci
+
+\nadpismimoobsah{Abstrakt}
+Tato maturitní práce se zabývá návrhem a~implementací multiplatformního interaktivního digitálního poznámkového bloku a~virtuální tabule (whiteboardu) s~integrovaným asistentem založeným na umělé inteligenci. Cílem práce je vytvořit klientskou aplikaci fungující jak ve webovém prohlížeči, tak jako nativní desktopová aplikace s~plynulým vektorovým vykreslováním, správou vícestránkových sešitů, kolaborativní synchronizací v~reálném čase a~modulem pro kontextové vysvětlování studijní látky i~automatické generování procvičovacích úloh. Teoretická část práce rozebírá principy počítačové 2D grafiky, afinních transformací souřadnicových prostorů, algoritmů vyhlazování tahů, architekturu \textit{local-first} softwaru s~využitím bezkolidních replikovaných datových typů (CRDT) a~principy velkých jazykových modelů (LLM) ve vzdělávání. Dále představuje použité technologie, zejména jazyky TypeScript a~Rust, knihovnu React, framework Tauri, protokol WebSocket a~databázový systém SQLite. Praktická část následně popisuje návrh architektury, implementaci jednotlivých podsystémů, optimalizaci vykreslovacího jádra a~testování výsledné aplikace.
+
+\nadpismimoobsah{Klíčová slova}
+digitální poznámkový blok, interaktivní tabule, Tauri, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, umělá inteligence, vzdělávání
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% STRANA 6: ANOTAČNÍ LIST (ANGLICKY)
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Summary}
+This graduation thesis deals with the design and implementation of a~cross-platform interactive digital notebook and virtual whiteboard featuring an integrated artificial intelligence assistant for education. The aim of the thesis is to develop a~client application operating both in a~web browser and as a~native desktop application, providing smooth vector rendering, multi-page notebook management, real-time collaborative synchronization, and a~module for contextual concept explanation and automated practice exercise generation. The theoretical part examines the principles of 2D computer graphics, affine coordinate transformations, stroke smoothing algorithms, local-first software architecture utilizing Conflict-Free Replicated Data Types (CRDTs), and the foundations of Large Language Models (LLMs) in education. Furthermore, it introduces the technologies used, specifically TypeScript, Rust, React, the Tauri framework, the WebSocket protocol, and SQLite. The practical part describes the architectural design, subsystem implementation, rendering optimizations, and testing of the resulting application.
+
+\nadpismimoobsah{Keywords}
+digital notebook, interactive whiteboard, Tauri, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, artificial intelligence, education
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% STRANA 7: OBSAH
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Obsah}
+\makeatletter
+\@starttoc{toc}
+\makeatother
+
+\clearpage
+
+
+% ==============================================================================
+% 1 ÚVOD
+% ==============================================================================
+\section{Úvod}
+\label{sec:uvod}
+
+Digitalizace vzdělávání a~každodenního studia přinesla v~posledních letech zásadní změnu ve způsobu, jakým studenti i~pedagogové zaznamenávají a~zpracovávají informace. Zatímco pro psaní lineárního textu existuje řada vyspělých textových editorů, při studiu exaktních a~technických oborů -- jako je matematika, fyzika, informatika či inženýrské disciplíny -- je nezbytné volné prostorové uspořádání poznámek, ruční kreslení schémat, zapisování vzorců a~anotování studijních materiálů ve formátu PDF.
+
+Stávající řešení pro digitální psaní poznámek však často trpí zásadními kompromisy. Řada moderních multiplatformních aplikací je postavena na technologiích, které s~sebou přinášejí vysokou paměťovou náročnost a~znatelnou vstupní odezvu (latenci) při kreslení v~prostředí linuxových i~dalších desktopových systémů. Zároveň je využití nástrojů umělé inteligence při studiu obvykle odděleno do samostatných konverzačních oken ve webovém prohlížeči. Student tak musí své ručně psané výpočty či poznámky složitě přepisovat nebo snímkovat a~přenášet mimo prostředí svého sešitu, čímž dochází ke ztrátě kontextu a~plynulosti učení.
+
+Motivací této maturitní práce je překonat uvedená omezení a~vytvořit ucelený, vysoce výkonný interaktivní digitální poznámkový blok, který spojuje plynulé vektorové vykreslování na nekonečném i~stránkovaném plátně s~nativní systémovou integrací, synchronizací v~reálném čase a~vestavěným AI asistentem pracujícím přímo s~kontextem poznámek na plátně.
+
+\subsection{Cíle práce}
+\label{sec:cile}
+
+V~souladu se zadáním maturitní práce byly stanoveny tři hlavní cíle:
+\begin{itemize}
+    \item \textbf{Vývoj multiplatformní klientské aplikace (desktop/web) s~plynulým vektorovým vykreslováním a~správou sešitů:} Navrhnout a~implementovat aplikaci běžící jak v~prostředí webového prohlížeče, tak jako nativní desktopová aplikace s~hardwarově akcelerovaným vykreslováním tahů bez vstupní prodlevy, podporou nekonečného plátna i~stránkovaných sešitů (včetně importu dokumentů PDF) a~perzistentní historií úprav.
+    \item \textbf{Integrace AI asistenta schopného kontextového vysvětlování konceptů zachycených na plátně:} Propojit prostředí poznámkového bloku s~multimodálním jazykovým modelem tak, aby uživatel mohl označit libovolnou oblast svých ručně psaných či kreslených poznámek a~získat srozumitelné vysvětlení, doplnění teorie nebo kontrolu postupu řešení.
+    \item \textbf{Implementace modulu pro automatické generování testovacích a~procvičovacích úloh z~poznámek:} Vytvořit mechanismus, který na základě obsahu sešitu vygeneruje interaktivní procvičovací otázky a~úlohy pro aktivní upevnění studované látky.
+\end{itemize}
+
+
+% ==============================================================================
+% 2 TEORETICKÁ ČÁST
+% ==============================================================================
+\section{Teoretická část}
+\label{sec:teorie}
+
+Tato kapitola vymezuje teoretická východiska, matematické principy a~softwarové architektury, na nichž je postaven návrh a~implementace interaktivního digitálního poznámkového bloku. V~první části jsou rozebrány koncepty uživatelských rozhraní pro prostorovou práci s~informacemi a~matematické základy dvourozměrné počítačové grafiky. Následuje rozbor distribuované synchronizace dat v~reálném čase, teorie velkých jazykových modelů ve vzdělávání a~přehled použitých programovacích jazyků, knihoven a~vývojových nástrojů.
+
+% ------------------------------------------------------------------------------
+% 2.1 DIGITÁLNÍ POZNÁMKOVÉ BLOKY A POČÍTAČOVÁ 2D GRAFIKA
+% ------------------------------------------------------------------------------
+\subsection{Digitální poznámkové bloky a počítačová 2D grafika}
+\label{sec:teorie_grafika}
+
+Moderní aplikace pro digitální zaznamenávání poznámek a~vizuální spolupráci představují syntézu dvou odlišných paradigmat interakce člověka s~počítačem (HCI -- \textit{Human-Computer Interaction}): neomezeného prostorového plátna a~strukturovaného stránkovaného dokumentu.
+
+\subsubsection{Koncept nekonečného plátna a stránkovaného sešitu}
+\label{sec:teorie_zui}
+
+Koncept tzv. nekonečného plátna (\textit{infinite canvas}) vychází z~teorie přibližovatelných uživatelských rozhraní (ZUI -- \textit{Zoomable User Interface}), jejíž základy položili Benjamin B.~Bederson a~James D.~Hollan v~rámci systému Pad++~\cite{bederson1994pad}. V~architektuře ZUI není pracovní plocha omezena pevnými rozměry obrazovky ani jednorozměrným vertikálním posuvníkem, ale je definována jako souvislá dvourozměrná eukleidovská rovina $\mathbb{R}^2$. Uživatel se v~tomto prostoru pohybuje pomocí plynulého posunu (\textit{panning}) a~změny měřítka (\textit{zooming}), což umožňuje organizovat informace prostorově do myšlenkových map, architektonických diagramů a~rozsáhlých výpočtů~\cite{bederson1994pad}.
+
+Naproti tomu strukturovaný stránkovaný sešit (\textit{notebook mode}) zachovává metaforu fyzického papíru, která je klíčová pro lineární vedení školních zápisků, práci s~učebními materiály a~následný tisk či export do formátu PDF. Standardizované rozměry stránek v~digitální podobě vycházejí z~mezinárodní normy ISO~216, která definuje řadu formátů A~(včetně formátu A4 o~rozměrech $210 \times 297\text{~mm}$) na základě konstantního poměru stran $1 : \sqrt{2} \approx 1 : 1{,}4142$~\cite{iso216}. Tento tzv. Lichtenbergův poměr zaručuje, že při půlení či škálování listu zůstává geometrická podobnost stránky zachována, což usnadňuje přepočet rozvržení na obrazovkách s~různým rozlišením~\cite{iso216}.
+
+\subsubsection{Rastrová a vektorová reprezentace grafických dat}
+\label{sec:teorie_rastr_vektor}
+
+Při návrhu vykreslovacího jádra digitální tabule je zásadní volba vnitřní reprezentace nakreslených tahů. V~počítačové grafice se rozlišují dva základní přístupy: rastrová (bitmapová) a~vektorová grafika~\cite{marschner2021cg}.
+
+Rastrová grafika ukládá obraz jako obdélníkovou matici diskrétních obrazových bodů (pixelů), z~nichž každý nese informaci o~barvě a~průhlednosti (např. v~barevném modelu RGBA). Ačkoliv je rastrový zápis vhodný pro fotografie nebo rastrované předlohy, při použití v~interaktivním poznámkovém bloku vykazuje výrazné nevýhody:
+\begin{itemize}
+    \item \textbf{Závislost na rozlišení:} Při přiblížení pohledu (\textit{zoom-in}) nad 100~\% dochází k~viditelné pixelizaci (aliasingu) a~ztrátě ostrosti hran~\cite{marschner2021cg}.
+    \item \textbf{Nemožnost zpětné manipulace s~objekty:} Jakmile je tah zakreslen do rastrové matice, splývá s~okolními pixely a~nelze jej dodatečně vybrat jako samostatný objekt, přesunout ani změnit jeho barvu či tloušťku.
+    \item \textbf{Vysoké paměťové nároky na velkém plátně:} Udržování rastrové vyrovnávací paměti pro rozsáhlé nebo nekonečné plátno by vyžadovalo alokaci gigabajtů grafické paměti.
+\end{itemize}
+
+Vektorová grafika naproti tomu popisuje obraz pomocí matematických a~geometrických primitiv -- uspořádaných množin bodů, úseček, polygonů a~parametrických křivek~\cite{marschner2021cg}. Každý tah perem je v~paměti uložen jako posloupnost diskrétních vzorků polohy a~přítlaku:
+\begin{equation}
+    S = \left\{ (x_i, y_i, p_i) \;\middle|\; i = 1, 2, \dots, n \right\}
+    \label{eq:stroke_samples}
+\end{equation}
+kde $(x_i, y_i) \in \mathbb{R}^2$ jsou souřadnice bodu ve virtuálním prostoru plátna a~$p_i \in \langle 0, 1 \rangle$ vyjadřuje normalizovanou sílu přítlaku stylusu~\cite{w3c_pointer}. Samotná rasterizace (převod vektorového popisu na pixely obrazovky) probíhá až v~okamžiku vykreslování snímku pro aktuální úroveň přiblížení. Díky tomu zůstávají tahy dokonale ostré při libovolném měřítku a~každý tah lze v~datovém modelu nezávisle indexovat, transformovat, mazat či synchronizovat po síti~\cite{marschner2021cg, mdn_canvas}.
+
+\subsubsection{Souřadnicové prostory a afinní transformace pohledu}
+\label{sec:teorie_transformace}
+
+Aby mohl uživatel plynule posouvat pohled po plátně a~měnit úroveň přiblížení, musí vykreslovací jádro neustále převádět souřadnice mezi dvěma souřadnicovými systémy~\cite{marschner2021cg}:
+\begin{enumerate}
+    \item \textbf{Souřadnicový systém obrazovky (\textit{Screen Space}):} Počátek $(0, 0)$ leží v~levém horním rohu okna prohlížeče či nativní aplikace; jednotkou jsou logické CSS pixely, v~nichž operační systém předává události ukazatele (myši, dotyku či stylusu)~\cite{w3c_pointer}.
+    \item \textbf{Souřadnicový systém světa (\textit{World Space}):} Virtuální nekonečná rovina plátna, v~níž jsou uloženy absolutní souřadnice všech stránek, vektorových tahů a~vložených obrázků.
+\end{enumerate}
+
+Vztah mezi těmito prostory je dán afinní transformací skládající se ze změny měřítka (škálování koeficientem $s > 0$) a~posunu (translace o~vektor $(t_x, t_y)$)~\cite{marschner2021cg, mdn_canvas}. V~homogenních souřadnicích lze přechod ze souřadnic světa $(x_w, y_w)$ do souřadnic obrazovky $(x_s, y_s)$ zapsat maticově:
+\begin{equation}
+    \begin{pmatrix} x_s \\ y_s \\ 1 \end{pmatrix}
+    =
+    \begin{pmatrix}
+        s & 0 & t_x \\
+        0 & s & t_y \\
+        0 & 0 & 1
+    \end{pmatrix}
+    \begin{pmatrix} x_w \\ y_w \\ 1 \end{pmatrix}
+    =
+    \begin{pmatrix}
+        s \cdot x_w + t_x \\
+        s \cdot y_w + t_y \\
+        1
+    \end{pmatrix}
+    \label{eq:world_to_screen}
+\end{equation}
+
+Při záznamu nového tahu ukazatelem nebo při testování výběru objektů (\textit{hit-testing}) je nutné aplikovat inverzní transformaci, která převede pozici kurzoru na obrazovce $(x_s, y_s)$ zpět do souřadnic světa $(x_w, y_w)$:
+\begin{equation}
+    x_w = \frac{x_s - t_x}{s}, \qquad y_w = \frac{y_s - t_y}{s}
+    \label{eq:screen_to_world}
+\end{equation}
+
+Při přibližování pohledu kolečkem myši či gestem nad konkrétním bodem obrazovky $(x_p, y_p)$ je navíc žádoucí, aby bod světa pod kurzorem zůstal na obrazovce na stejném místě. Pokud se měřítko změní z~původní hodnoty $s_1$ na novou hodnotu $s_2$, nový posun kamery $(t'_{x}, t'_{y})$ se vypočítá ze vztahu~\cite{marschner2021cg}:
+\begin{equation}
+    t'_x = x_p - (x_p - t_x) \cdot \frac{s_2}{s_1}, \qquad
+    t'_y = y_p - (y_p - t_y) \cdot \frac{s_2}{s_1}
+    \label{eq:zoom_at_point}
+\end{equation}
+
+\subsubsection{Hustota pixelů displeje (HiDPI) a vykreslování volné ruky}
+\label{sec:teorie_hidpi_freehand}
+
+Moderní monitory a~přenosné počítače (označované jako HiDPI nebo Retina) využívají vysokou hustotu fyzických obrazových bodů. Webové standardy proto rozlišují mezi logickým CSS pixelem a~fyzickým pixelem zobrazovacího panelu. Jejich poměr udává vlastnost \texttt{window.devicePixelRatio} (DPR)~\cite{mdn_dpr}:
+\begin{equation}
+    \text{DPR} = \frac{\text{rozlišení ve fyzických pixelech}}{\text{rozlišení v~logických CSS pixelech}}
+    \label{eq:dpr}
+\end{equation}
+Pokud má prvek \texttt{<canvas>} nastavenu logickou velikost v~CSS na $W \times H$ pixelů, ale jeho vnitřní rastrová vyrovnávací paměť (\textit{backing store}) není vynásobena koeficientem DPR, prohlížeč vykreslí scénu v~nízkém rozlišení a~následně ji lineárně roztáhne, což způsobuje rozmazání obrazu~\cite{mdn_dpr}. Správná inicializace proto vyžaduje nastavení vnitřní šířky a~výšky plátna na $\lfloor W \cdot \text{DPR} \rfloor \times \lfloor H \cdot \text{DPR} \rfloor$ a~současné vynásobení transformační matice kontextu koeficientem DPR~\cite{mdn_canvas, mdn_dpr}.
+
+Pro samotné vykreslení tahu proměnlivé tloušťky (simulující reálné pero či štětec) nestačí vykreslit prostou lomenou čáru konstantní šířky. V~moderních grafických aplikacích se využívá algoritmus teselace obrysového polygonu, jehož referenční implementaci představuje knihovna \texttt{perfect-freehand} autora Steva Ruize~\cite{ruiz_freehand}. Algoritmus přijímá posloupnost vstupních bodů $(x_i, y_i, p_i)$, aplikuje vyhlazení trajektorie (\textit{streamline interpolation}), v~každém bodě vypočítá normálový vektor kolmý na směr pohybu pera a~ve vzdálenosti úměrné přítlaku $p_i$ (nebo rychlosti pohybu ukazatele) zkonstruuje levou a~pravou hranici tahu. Výsledný uzavřený polygon je následně proložen kvadratickými Bézierovými křivkami a~vyplněn na grafickém plátně, což vytváří přirozený a~plynulý rukopis~\cite{ruiz_freehand}.
+
+
+% ------------------------------------------------------------------------------
+% 2.2 ARCHITEKTURA SYNCHRONIZACE A KOMUNIKACE V REÁLNÉM ČASE
+% ------------------------------------------------------------------------------
+\subsection{Architektura synchronizace a komunikace v reálném čase}
+\label{sec:teorie_sync}
+
+Interaktivní poznámkový blok klade vysoké nároky na správu stavu: musí fungovat okamžitě bez závislosti na kvalitě internetového připojení a~zároveň umožňovat synchronizaci poznámek mezi více zařízeními či spolupracujícími uživateli v~reálném čase.
+
+\subsubsection{Paradigma Local-First softwaru}
+\label{sec:teorie_local_first}
+
+Tradiční webové aplikace využívají centralizovaný model klient--server, v~němž je primárním zdrojem pravdy vzdálená databáze na serveru. Pokud uživatel provede úpravu, klient odešle požadavek na server a~čeká na potvrzení; při výpadku připojení přestává být aplikace funkční.
+
+Alternativu představuje architektura \textit{Local-First Software}, kterou v~roce 2019 formálně definovali Martin Kleppmann a~kolektiv z~výzkumné laboratoře Ink~\&~Switch~\cite{kleppmann2019local}. V~tomto modelu jsou data primárně uložena a~zpracovávána přímo v~úložišti klientského zařízení, zatímco vzdálený server slouží k~zálohování a~distribuci změn mezi ostatní klienty. Architektura \textit{local-first} přináší pro poznámkový blok tři zásadní vlastnosti~\cite{kleppmann2019local}:
+\begin{enumerate}
+    \item \textbf{Nulová síťová latence při interakci:} Čtení i~zápis probíhají přímo v~lokální paměti a~lokálním úložišti prohlížeče (\texttt{localStorage} a~\texttt{IndexedDB})~\cite{whatwg_storage, w3c_indexeddb}, takže odezva uživatelského rozhraní při kreslení nezávisí na odezvě sítě.
+    \item \textbf{Plnohodnotný režim offline:} Uživatel může vytvářet a~upravovat sešity bez přístupu k~internetu; provedené změny se synchronizují automaticky po obnovení spojení.
+    \item \textbf{Vlastnictví a trvanlivost dat:} Uživatelská data zůstávají fyzicky dostupná na zařízení uživatele a~lze je kdykoliv exportovat do otevřeného souborového formátu~\cite{kleppmann2019local}.
+\end{enumerate}
+
+\subsubsection{Bezkolidní replikované datové typy (CRDT) a knihovna Yjs}
+\label{sec:teorie_crdt}
+
+Pokud více klientů upravuje stejný dokument současně (nebo pokud jeden uživatel provede změny offline a~následně se připojí k~síti), vzniká problém souběžných aktualizací a~řešení konfliktů. Historicky se v~kolaborativních editorech používala metoda operační transformace (OT -- \textit{Operational Transformation}), která však vyžaduje centrální koordinační server a~je náchylná k~chybám při složitých souběžných operacích~\cite{kleppmann2019local}.
+
+Moderním řešením tohoto problému jsou \textbf{bezkolidní replikované datové typy} (CRDT -- \textit{Conflict-Free Replicated Data Types}), jejichž matematický model formalizovali Marc Shapiro, Nuno Preguiça, Carlos Baquero a~Marek Zawirski v~roce 2011~\cite{shapiro2011crdt}. Datové struktury CRDT zaručují vlastnost označovanou jako \textbf{silná konečná konzistence} (\textit{Strong Eventual Consistency} -- SEC):
+\begin{itemize}
+    \item Každá lokální replika může být upravována okamžitě bez nutnosti žádat o~zámek (\textit{lock}) nebo čekat na souhlas ostatních uzlů.
+    \item Operace slučování stavů (tzv. \textit{merge} u~stavově orientovaných CvRDT) nebo aplikování aktualizací (u~operačně orientovaných CmRDT) je matematicky komutativní, asociativní a~idempotentní~\cite{shapiro2011crdt}.
+    \item Jakmile si libovolné dvě repliky vymění stejnou množinu aktualizací (bez ohledu na pořadí jejich doručení po síti), dospějí deterministicky k~identickému vnitřnímu stavu bez ztráty dat a~bez nutnosti manuálního řešení konfliktů~\cite{shapiro2011crdt}.
+\end{itemize}
+
+V~prostředí jazyka JavaScript a~TypeScript je nejrozšířenější vysoce optimalizovanou implementací CRDT knihovna \textbf{Yjs}, kterou vytvořil Kevin Jahns~\cite{jahns_yjs}. Yjs reprezentuje sdílený dokument (\texttt{Y.Doc}) jako kolekci sdílených datových typů, jako jsou \texttt{Y.Array} (pro uspořádané seznamy tahů, obrázků či stránek) a~\texttt{Y.Map} (pro klíč--hodnota metadata dokumentu). Každá vkládaná položka je interně uložena jako struktura \texttt{Item} s~unikátním identifikátorem dvojice $(\text{\texttt{clientID}}, \text{\texttt{clock}})$, kde \texttt{clock} je logické Lamportovo časové razítko. Při synchronizaci mezi klienty a~serverem si uzly vyměňují kompaktní binárně kódované stavové vektory (\textit{state vectors}) a~rozdílové aktualizace (\textit{diffs}), což minimalizuje přenášený objem dat po síti~\cite{jahns_yjs}.
+
+\subsubsection{Protokol WebSocket}
+\label{sec:teorie_websocket}
+
+Pro obousměrný přenos binárních aktualizací CRDT a~telemetrie kurzorů v~reálném čase není klasický protokol HTTP vhodný, neboť je založen na modelu dotaz--odpověď (\textit{request--response}) inicovaném výhradně klientem. Pro překonání tohoto omezení byl organizací IETF v~roce 2011 standardizován protokol \textbf{WebSocket} v~dokumentu RFC~6455~\cite{rfc6455}.
+
+Protokol WebSocket poskytuje plně duplexní (\textit{full-duplex}), obousměrný komunikační kanál přes jediné trvalé spojení TCP~\cite{rfc6455}. Navázání spojení začíná standardním požadavkem HTTP \texttt{GET} obsahujícím hlavičky \texttt{Upgrade: websocket} a~\texttt{Connection: Upgrade}. Pokud server přechod potvrdí stavovým kódem \texttt{101 Switching Protocols}, protokoly se přepnou z~HTTP na binární rámcový protokol WebSocket~\cite{rfc6455}.
+
+Oproti opakovanému dotazování (\textit{HTTP polling}) přináší WebSocket minimální režii hlaviček (pouze 2 až 14~bajtů na rámec) a~umožňuje serveru okamžitě odesílat (\textit{push}) změny všem připojeným klientům v~milisekundových intervalech. Protokol nativně rozlišuje mezi textovými rámci (kódovanými v~UTF-8, vhodnými pro JSON zprávy o~pohybu kurzorů) a~binárními rámci (\texttt{ArrayBuffer} / \texttt{Uint8Array}, vhodnými pro přenos komprimovaných aktualizací Yjs CRDT)~\cite{rfc6455}.
+
+
+% ------------------------------------------------------------------------------
+% 2.3 UMĚLÁ INTELIGENCE A VELKÉ JAZYKOVÉ MODELY VE VZDĚLÁVÁNÍ
+% ------------------------------------------------------------------------------
+\subsection{Umělá inteligence a velké jazykové modely ve vzdělávání}
+\label{sec:teorie_ai}
+
+Integrace asistenta umělé inteligence do studijního poznámkového bloku vychází z~pokroků v~oblasti zpracování přirozeného jazyka (NLP -- \textit{Natural Language Processing}), počítačového vidění a~multimodálních neuronových sítí.
+
+\subsubsection{Architektura Transformer a multimodální jazykové modely}
+\label{sec:teorie_llm}
+
+Základním stavebním kamenem současných velkých jazykových modelů (LLM -- \textit{Large Language Models}) je architektura neuronové sítě \textbf{Transformer}, kterou v~roce 2017 představil tým výzkumníků pod vedením Ashishe Vaswaniho v~práci \textit{Attention Is All You Need}~\cite{vaswani2017attention}. Na rozdíl od starších rekurentních neuronových sítí (RNN a~LSTM), které zpracovávaly vstupní sekvenci tokenů striktně sekvenčně zleva doprava, využívá Transformer mechanismus tzv. \textbf{sebe-pozornosti} (\textit{self-attention}).
+
+Mechanismus pozornosti počítá pro každý vstupní prvek (token) vážené vazby ke všem ostatním prvkům v~kontextovém okně současně pomocí matic dotazů ($Q$ -- \textit{Queries}), klíčů ($K$ -- \textit{Keys}) a~hodnot ($V$ -- \textit{Values}) podle vztahu~\cite{vaswani2017attention}:
+\begin{equation}
+    \text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+    \label{eq:attention}
+\end{equation}
+kde $d_k$ je dimenze vektorů klíčů a~funkce $\text{softmax}$ převádí skóre podobnosti na pravděpodobnostní rozdělení. Tento přístup umožnil masivní paralelizaci tréninku na grafických akcelerátorech a~schopnost zachytit dlouhodobé sémantické souvislosti v~textu i~matematickém zápisu~\cite{vaswani2017attention}.
+
+Pro práci s~ručně psanými poznámkami a~diagramy na digitálním plátně mají klíčový význam \textbf{multimodální modely} (VLM -- \textit{Vision-Language Models}), které propojují vizuální enkodér obrazu s~jazykovým dekodérem do společného vektorového prostoru příznaků (\textit{embedding space}). Model tak dokáže analyzovat přímo rastrovaný výřez plátna obsahující ručně psané rovnice, grafy funkcí nebo vývojové diagramy společně s~textovým dotazem uživatele.
+
+\subsubsection{Pedagogické principy AI asistentů při výuce}
+\label{sec:teorie_ai_edukace}
+
+Využití velkých jazykových modelů ve vzdělávání spadá do oblasti inteligentních výukových systémů (ITS -- \textit{Intelligent Tutoring Systems}). Jak uvádějí Enkelejda Kasneci a~kolektiv ve studii publikované v~časopise \textit{Learning and Individual Differences}~\cite{kasneci2023chatgpt}, hlavní přínos LLM pro studenty spočívá v~individualizaci výuky a~okamžité zpětné vazbě.
+
+V~kontextu interaktivního poznámkového bloku plní AI asistent dvě klíčové didaktické funkce~\cite{kasneci2023chatgpt}:
+\begin{enumerate}
+    \item \textbf{Kontextové lešení (\textit{Instructional Scaffolding}) a vysvětlování konceptů:} Namísto poskytování obecných encyklopedických definic vychází asistent z~konkrétního zápisu či náčrtu, který student právě vytvořil na plátně. Dokáže tak identifikovat konkrétní krok ve výpočtu, kterému student nerozumí, vysvětlit jej krok za krokem a~upozornit na případné logické či numerické chyby~\cite{kasneci2023chatgpt}.
+    \item \textbf{Aktivní vybavování (\textit{Active Recall}) a generování procvičovacích úloh:} Výzkumy kognitivní psychologie dlouhodobě prokazují, že pasivní čtení poznámek je výrazně méně efektivní než aktivní testování znalostí. Automatické generování testovacích otázek a~příkladů přímo z~obsahu studijního sešitu umožňuje studentovi okamžitě ověřit míru porozumění probíranému tématu~\cite{kasneci2023chatgpt}.
+\end{enumerate}
+
+
+% ------------------------------------------------------------------------------
+% 2.4 POUŽITÉ PROGRAMOVACÍ JAZYKY A KMENOVÉ TECHNOLOGIE
+% ------------------------------------------------------------------------------
+\subsection{Použité programovací jazyky a kmenové technologie}
+\label{sec:teorie_technologie}
+
+Pro realizaci multiplatformní architektury poznámkového bloku byla zvolena kombinace moderních webových a~systémových technologií, které propojují rychlost vývoje uživatelského rozhraní s~výkonem nativního kódu.
+
+\subsubsection{TypeScript a JavaScript}
+\label{sec:teorie_typescript}
+
+\textbf{TypeScript} je staticky typovaný programovací jazyk vyvíjený společností Microsoft od roku 2012, který představuje syntaktickou nadmnožinu jazyka JavaScript (standardizovaného pod označením ECMAScript)~\cite{typescript_docs}. Veškerý platný kód v~jazyce JavaScript je současně platným kódem v~jazyce TypeScript, avšak TypeScript rozšiřuje jazyk o~statický typový systém, rozhraní (\texttt{interface}), generické typy, výčtové typy a~typovou inferenci~\cite{typescript_docs}.
+
+Při sestavování projektu (\textit{transpilaci}) provádí překladač TypeScriptu důkladnou statickou analýzu kódu a~následně odstraní typové anotace, čímž vygeneruje čistý JavaScript spustitelný v~libovolném webovém prohlížeči nebo v~prostředí Node.js. V~rozsáhlé grafické aplikaci zabraňuje statické typování celé třídě běhových chyb, neboť vynucuje přesnou strukturu souřadnicových bodů, vektorových tahů, stránek sešitu, stavů historie (Undo/Redo) i~síťových zpráv~\cite{typescript_docs}.
+
+\subsubsection{Knihovna React}
+\label{sec:teorie_react}
+
+\textbf{React} je open-source knihovna pro tvorbu uživatelských rozhraní, původně vyvinutá Jordanem Walkem ve společnosti Meta (dříve Facebook) a~uvolněná v~roce 2013~\cite{react_docs}. React je založen na \textbf{deklarativním a~komponentovém přístupu}: uživatelské rozhraní je rozděleno do samostatných, znovupoužitelných komponent, z~nichž každá spravuje svůj vlastní lokální stav a~popisuje, jak má rozhraní v~daném stavu vypadat~\cite{react_docs}.
+
+Pro řízení stavu a~životního cyklu funkcionálních komponent využívá React systém tzv. \textbf{Hooků} (\textit{Hooks})~\cite{react_docs}:
+\begin{itemize}
+    \item \texttt{useState} slouží k~uchovávání reaktivního stavu komponenty (např. aktivní kreslicí nástroj, zvolená barva pera, otevřená modální okna), jehož změna vyvolá překreslení rozhraní.
+    \item \texttt{useEffect} umožňuje synchronizovat komponentu s~externími systémy (např. navázání spojení WebSocket, registrace globálních klávesových zkratek či naslouchání změnám velikosti okna přes \texttt{ResizeObserver}).
+    \item \texttt{useRef} uchovává mutovatelnou referenci, která přetrvává mezi jednotlivými vykresleními bez vyvolávání reaktivního přepočtu virtuálního DOMu (\textit{Virtual DOM})~\cite{react_docs}.
+\end{itemize}
+
+Kombinace deklarativního Reactu pro ovládací panely (lišty nástrojů, správa sešitů, panel AI asistenta) a~imperativního přístupu přes \texttt{useRef} pro přímé vykreslování na prvky \texttt{<canvas>} ve smyčce \texttt{requestAnimationFrame} je klíčová pro výkon aplikace: během pohybu pera po plátně nedochází k~rekonciliaci stromu React komponent, takže vykreslování dosahuje plné obnovovací frekvence monitoru~\cite{mdn_canvas, react_docs}.
+
+\subsubsection{Programovací jazyk Rust}
+\label{sec:teorie_rust}
+
+\textbf{Rust} je kompilovaný, staticky typovaný systémový programovací jazyk navržený s~důrazem na vysoký výkon, souběžnost a~paměťovou bezpečnost~\cite{rust_book}. Původně jej vytvořil Graydon Hoare ve společnosti Mozilla Research a~první stabilní verze Rust~1.0 byla vydána v~roce 2015.
+
+Na rozdíl od jazyků jako C~nebo C++, v~nichž manuální správa paměti často vede k~závažným chybám (přístup k~uvolněné paměti \textit{use-after-free}, přetečení vyrovnávací paměti či souběhy dat \textit{data races}), a~na rozdíl od jazyků jako Java, C\# či Go, které k~uvolňování paměti využívají běhový sběrač nepoužívané paměti (\textit{Garbage Collector} -- GC), zavádí Rust unikátní model \textbf{vlastnictví (\textit{ownership}) a~vypůjčování (\textit{borrowing})} kontrolovaný přímo v~době kompilace tzv. \textit{borrow checkerem}~\cite{rust_book}:
+\begin{enumerate}
+    \item Každá hodnota v~paměti má právě jednoho vlastníka (\textit{owner}).
+    \item V~jednom okamžiku může existovat buď libovolný počet neměnných referencí (\texttt{\&T}), nebo právě jedna měnitelná reference (\texttt{\&mut T}).
+    \item Jakmile vlastník opustí svůj platný rozsah (\textit{scope}), paměť je automaticky a~deterministicky uvolněna bez režie GC~\cite{rust_book}.
+\end{enumerate}
+
+Díky přímé kompilaci do nativního strojového kódu prostřednictvím backendu LLVM dosahuje Rust výkonu srovnatelného s~jazykem C++, což z~něj činí ideální jazyk pro nativní jádro desktopové aplikace~\cite{rust_book}.
+
+\subsubsection{Framework Tauri a srovnání s alternativami}
+\label{sec:teorie_tauri}
+
+\textbf{Tauri} je open-source framework pro tvorbu multiplatformních desktopových a~mobilních aplikací, jehož stabilní verze Tauri~2.0 představuje moderní alternativu k~tradičnímu frameworku Electron~\cite{tauri_docs}.
+
+Zatímco aplikace postavené na frameworku Electron přibalují ke každému programu kompletní instanci prohlížeče Chromium a~běhové prostředí Node.js (což vede k~instalačním balíčkům o~velikosti přes 150~MB a~vysoké spotřebě paměti RAM), Tauri odděluje aplikační jádro v~jazyce Rust od zobrazovací vrstvy, pro kterou využívá \textbf{nativní systémový WebView} již přítomný v~operačním systému~\cite{tauri_docs}:
+\begin{itemize}
+    \item \textbf{Linux:} knihovna \texttt{WebKitGTK} (součást grafického prostředí GTK) spolupracující se zobrazovacím protokolem Wayland nebo X11~\cite{tauri_docs, wayland_docs},
+    \item \textbf{Windows:} komponenta \texttt{Microsoft Edge WebView2} (založená na jádře Chromium),
+    \item \textbf{macOS:} systémový framework \texttt{WKWebView} (založený na jádře WebKit)~\cite{tauri_docs}.
+\end{itemize}
+
+Komunikace mezi frontendovou částí (TypeScript/React) a~nativním jádrem (Rust) probíhá prostřednictvím asynchronního meziprocesového mostu (IPC -- \textit{Inter-Process Communication}). Funkce v~jazyce Rust označené atributovým makrem \texttt{\#[tauri::command]} lze z~frontendu bezpečně volat pomocí funkce \texttt{invoke()}, přičemž parametry i~návratové hodnoty jsou automaticky serializovány pomocí knihovny \texttt{serde} do formátu JSON~\cite{tauri_docs}. Tauri navíc uplatňuje přísný bezpečnostní model založený na oprávněních (\textit{Capabilities / ACL}), který přesně vymezuje, ke kterým systémovým příkazům má webové rozhraní přístup~\cite{tauri_docs}. Srovnání obou architektur shrnuje Tab.~\ref{tab:tauri_vs_electron}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{5.3cm}>{\raggedright\arraybackslash}p{5.3cm}@{}}
+        \toprule
+        \textbf{Parametr} & \textbf{Framework Tauri v2} & \textbf{Framework Electron} \\
+        \midrule
+        Nativní backend & Kompilovaný jazyk Rust & Interpretovaný Node.js (C++/JS) \\
+        Vykreslovací jádro & Systémové (WebKitGTK, WebView2, WKWebView) & Přibalená instance prohlížeče Chromium \\
+        Velikost instalátoru & Typicky 3 až 10~MB & Typicky 120 až 250~MB \\
+        Spotřeba paměti RAM & Nízká (sdílené systémové knihovny) & Vysoká (samostatný proces prohlížeče) \\
+        Bezpečnostní model & Granulární systém Capabilities (ACL) & Širší přístup k~API prostředí Node.js \\
+        \bottomrule
+    \end{tabular}
+    \caption{Architektonické srovnání frameworků Tauri v2 a Electron~\cite{tauri_docs}}
+    \label{tab:tauri_vs_electron}
+\end{table}
+
+\subsubsection{Serverové prostředí Node.js, Hono a databáze SQLite}
+\label{sec:teorie_backend}
+
+Pro zajištění centrální synchronizace, trvalého ukládání sdílených sešitů a~distribuce webové verze aplikace je využit serverový stack postavený na prostředí Node.js, frameworku Hono a~databázi SQLite:
+\begin{itemize}
+    \item \textbf{Node.js:} Asynchronní, událostmi řízené (\textit{event-driven}) běhové prostředí pro JavaScript a~TypeScript mimo prohlížeč, které v~roce 2009 vytvořil Ryan Dahl nad vysoce výkonným kompilátorem Google V8~\cite{nodejs_docs}. Díky neblokujícímu modelu vstupně-výstupních operací (non-blocking I/O) a~jednovláknové smyčce událostí (\textit{event loop}) dokáže Node.js efektivně obsluhovat stovky souběžných WebSocket spojení s~minimální režií~\cite{nodejs_docs}.
+    \item \textbf{Hono:} Moderní, ultrarychlý webový framework pro TypeScript postavený přímo na standardizovaných Web API (\texttt{Request}, \texttt{Response}, \texttt{Fetch})~\cite{hono_docs}. Slouží ke směrování požadavků REST API, obsluze statických souborů sestavené aplikace a~integraci se serverem WebSocket.
+    \item \textbf{SQLite a režim WAL:} SQLite je vestavěný (\textit{embedded}) relační databázový systém vytvořený D.~Richardem Hippem v~roce 2000, který ukládá celou databázi včetně indexů a~tabulek do jediného multiplatformního souboru na disku bez nutnosti provozovat samostatný databázový proces~\cite{sqlite_wal}. Při aktivaci žurnálovacího režimu \textbf{WAL} (\textit{Write-Ahead Logging}) nejsou změny zapisovány přímo do hlavního databázového souboru, ale jsou nejprve sekvenčně připojovány do samostatného souboru \texttt{-wal}. To umožňuje souběžné čtení databáze během probíhajícího zápisu a~výrazně zvyšuje propustnost při častém ukládání stavů plátna~\cite{sqlite_wal}.
+\end{itemize}
+
+
+% ------------------------------------------------------------------------------
+% 2.5 VÝVOJOVÉ NÁSTROJE A POMOCNÉ KNIHOVNY
+% ------------------------------------------------------------------------------
+\subsection{Vývojové nástroje a pomocné knihovny}
+\label{sec:teorie_nastroje}
+
+Při vývoji, sestavování a~správě projektu byla využita sada specializovaných knihoven a~inženýrských nástrojů, které zajišťují modularitu kódu a~efektivní vývojový cyklus.
+
+\subsubsection{Sestavovací nástroj Vite a stylovací framework Tailwind CSS}
+\label{sec:teorie_vite_tailwind}
+
+\textbf{Vite} je moderní sestavovací nástroj (\textit{build tool}) a~vývojový server pro webové aplikace, který vytvořil Evan You~\cite{vite_docs}. Během vývoje využívá Vite nativní podporu modulů ECMAScript (ESM) přímo v~prohlížeči a~překládá zdrojové soubory TypeScriptu a~JSX na vyžádání. Díky mechanismu \textit{Hot Module Replacement} (HMR) se úpravy kódu projeví v~běžící aplikaci během desítek milisekund bez ztráty stavu plátna. Pro produkční nasazení využívá Vite optimalizovaný bundler, který zdrojový kód minifikuje a~rozdělí do statických balíčků~\cite{vite_docs}.
+
+\textbf{Tailwind CSS} je tzv. \textit{utility-first} CSS framework, který namísto předdefinovaných vzhledů komponent poskytuje sadu atomických nízkoúrovňových tříd přímo pro rozvržení (\texttt{flex}, \texttt{grid}), rozestupy, typografii a~barevná schémata~\cite{tailwind_docs}. Ve spojení s~nativními CSS proměnnými (\textit{CSS Custom Properties}) umožňuje konzistentní přepínání barevných režimů aplikace (světlý, teplý čtecí a~tmavý režim) v~reálném čase~\cite{tailwind_docs}.
+
+\subsubsection{Knihovna PDF.js}
+\label{sec:teorie_pdfjs}
+
+Pro import studijních materiálů, pracovních listů a~prezentací do prostředí poznámkového bloku je využita open-source knihovna \textbf{PDF.js} (\texttt{pdfjs-dist}), vyvíjená organizací Mozilla Foundation~\cite{pdfjs_docs}. Knihovna implementuje parser a~vykreslovací jádro standardu Portable Document Format (PDF) přímo v~jazyce JavaScript. Pomocí asynchronního vlákna (\textit{Web Worker}) dekóduje vnitřní strukturu dokumentu PDF a~vykresluje jednotlivé stránky do rastrové podoby na prvky HTML5 Canvas, které lze následně vložit jako podkladové listy sešitu a~volně přes ně psát či kreslit~\cite{pdfjs_docs}.
+
+\subsubsection{Visual Studio Code, Git a GitHub}
+\label{sec:teorie_vscode_git}
+
+Jako hlavní vývojové prostředí byl zvolen \textbf{Visual Studio Code} (VS~Code) od společnosti Microsoft~\cite{vscode_docs}. Tento multiplatformní editor zdrojového kódu poskytuje prostřednictvím rozšíření plnou podporu pro jazykovou analýzu TypeScriptu, systémového jazyka Rust (\texttt{rust-analyzer}) i~sazbu dokumentace v~systému \LaTeX~\cite{vscode_docs}.
+
+Pro správu verzí zdrojového kódu byl využit distribuovaný verzovací systém \textbf{Git}, původně vytvořený Linusem Torvaldsem v~roce 2005 pro potřeby vývoje jádra operačního systému Linux~\cite{chacon2014git}, v~kombinaci s~cloudovou platformou \textbf{GitHub}. Git uchovává historii projektu jako orientovaný acyklický graf snímků stavů (\textit{commits}), což umožňuje bezpečné experimentování s~novými funkcemi, sledování historie změn a~zálohování celého projektu~\cite{chacon2014git}.
+
+
+% ==============================================================================
+% 3 PRAKTICKÁ ČÁST (VLASTNÍ PRÁCE)
+% ==============================================================================
+\section{Praktická část}
+\label{sec:prakticka}
+
+Tato kapitola popisuje samotný návrh architektury, implementaci jednotlivých modulů aplikace a~řešení technických výzev, které se během vývoje vyskytly.
+
+\subsection{Architektura a struktura projektu}
+\label{sec:architektura}
+
+\subsection{Implementace vykreslovacího jádra a správy sešitů}
+\label{sec:implementace_canvas}
+
+\subsection{Nativní vrstva v prostředí Tauri a Rust}
+\label{sec:implementace_tauri}
+
+\subsection{Kolaborativní synchronizace a serverová část}
+\label{sec:implementace_sync}
+
+\subsection{Integrace AI asistenta a generování úloh}
+\label{sec:implementace_ai}
+
+\subsection{Testování a optimalizace aplikace}
+\label{sec:testovani}
+
+
+% ==============================================================================
+% 4 ZÁVĚR
+% ==============================================================================
+\section{Závěr}
+\label{sec:zaver}
+
+Závěr…
+
+
+% ==============================================================================
+% 5 SEZNAM OBRÁZKŮ
+% ==============================================================================
+\section{Seznam obrázků}
+\label{sec:seznam_obrazku}
+
+\makeatletter
+\@starttoc{lof}
+\makeatother
+
+
+% ==============================================================================
+% 6 SEZNAM VYUŽITÝCH ZDROJŮ (ČSN ISO 690)
+% ==============================================================================
+\section{Seznam využitých zdrojů}
+\label{sec:zdroje}
+
+\begingroup
+\sloppy
+\renewcommand{\section}[2]{}%
+\begin{thebibliography}{99}
+
+    \bibitem{bederson1994pad}
+    BEDERSON, Benjamin B. a~James D. HOLLAN. Pad++: A~Zooming Graphical Interface for Exploring Alternate Interface Physics. In: \textit{Proceedings of the 7th Annual ACM Symposium on User Interface Software and Technology (UIST '94)} [online]. New York: ACM, 1994, s.~17--26 [cit. 2026-10-19]. ISBN 0-89791-657-3. Dostupné z: \url{https://doi.org/10.1145/192426.192435}
+
+    \bibitem{iso216}
+    INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. \textit{ISO 216:2007 Writing paper and certain classes of printed matter -- Trimmed sizes -- A and B series, and indication of machine direction} [online]. Geneva: ISO, 2007 [cit. 2026-10-19]. Dostupné z: \url{https://www.iso.org/standard/36631.html}
+
+    \bibitem{marschner2021cg}
+    MARSCHNER, Steve a~Peter SHIRLEY. \textit{Fundamentals of Computer Graphics}. 5th ed. Boca Raton: CRC Press, 2021. ISBN 978-0-367-50503-5.
+
+    \bibitem{w3c_pointer}
+    WORLD WIDE WEB CONSORTIUM (W3C). \textit{Pointer Events -- Level 3} [online]. W3C Working Draft, 2024 [cit. 2026-10-19]. Dostupné z: \url{https://www.w3.org/TR/pointerevents3/}
+
+    \bibitem{mdn_canvas}
+    MOZILLA CONTRIBUTORS. \textit{Canvas API -- Web APIs | MDN} [online]. San Francisco: Mozilla Foundation, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API}
+
+    \bibitem{mdn_dpr}
+    MOZILLA CONTRIBUTORS. \textit{Window: devicePixelRatio property -- Web APIs | MDN} [online]. San Francisco: Mozilla Foundation, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio}
+
+    \bibitem{ruiz_freehand}
+    RUIZ, Steve. \textit{perfect-freehand: Draw perfect pressure-sensitive freehand lines} [online]. GitHub, 2023 [cit. 2026-10-19]. Dostupné z: \url{https://github.com/steveruizok/perfect-freehand}
+
+    \bibitem{kleppmann2019local}
+    KLEPPMANN, Martin, Adam WIGGINS, Peter VAN HARDENBERG a~Mark MCGRANAGHAN. Local-first software: You own your data, in spite of the cloud. In: \textit{Proceedings of the 2019 ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward! 2019)} [online]. New York: ACM, 2019, s.~154--178 [cit. 2026-10-19]. ISBN 978-1-4503-6995-4. Dostupné z: \url{https://www.inkandswitch.com/local-first/}
+
+    \bibitem{whatwg_storage}
+    WHATWG. \textit{HTML Living Standard -- Web Storage} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://html.spec.whatwg.org/multipage/webstorage.html}
+
+    \bibitem{w3c_indexeddb}
+    WORLD WIDE WEB CONSORTIUM (W3C). \textit{Indexed Database API 3.0} [online]. W3C Recommendation, 2025 [cit. 2026-10-19]. Dostupné z: \url{https://www.w3.org/TR/IndexedDB/}
+
+    \bibitem{shapiro2011crdt}
+    SHAPIRO, Marc, Nuno PREGUIÇA, Carlos BAQUERO a~Marek ZAWIRSKI. Conflict-Free Replicated Data Types. In: \textit{Stabilization, Safety, and Security of Distributed Systems (SSS 2011)} [online]. Berlin: Springer, 2011, Lecture Notes in Computer Science, sv.~6976, s.~386--400 [cit. 2026-10-19]. ISBN 978-3-642-24549-7. Dostupné z: \url{https://doi.org/10.1007/978-3-642-24550-3_29}
+
+    \bibitem{jahns_yjs}
+    JAHNS, Kevin. \textit{Yjs Documentation -- Shared Editing \& CRDT Framework} [online]. 2025 [cit. 2026-10-19]. Dostupné z: \url{https://docs.yjs.dev/}
+
+    \bibitem{rfc6455}
+    FETTE, Ian a~Alexey MELNIKOV. \textit{RFC 6455: The WebSocket Protocol} [online]. Internet Engineering Task Force (IETF), prosinec 2011 [cit. 2026-10-19]. Dostupné z: \url{https://datatracker.ietf.org/doc/html/rfc6455}
+
+    \bibitem{vaswani2017attention}
+    VASWANI, Ashish et al. Attention Is All You Need. In: \textit{Advances in Neural Information Processing Systems 30 (NIPS 2017)} [online]. Long Beach: Curran Associates, 2017, s.~5998--6008 [cit. 2026-10-19]. Dostupné z: \url{https://arxiv.org/abs/1706.03762}
+
+    \bibitem{kasneci2023chatgpt}
+    KASNECI, Enkelejda et al. ChatGPT for good? On opportunities and challenges of large language models for education. \textit{Learning and Individual Differences} [online]. 2023, roč.~103, č.~102274 [cit. 2026-10-19]. ISSN 1041-6080. Dostupné z: \url{https://doi.org/10.1016/j.lindif.2023.102274}
+
+    \bibitem{typescript_docs}
+    MICROSOFT CORPORATION. \textit{TypeScript Documentation} [online]. Redmond: Microsoft, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://www.typescriptlang.org/docs/}
+
+    \bibitem{react_docs}
+    META PLATFORMS. \textit{React Reference Overview} [online]. Menlo Park: Meta Platforms, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://react.dev/reference/react}
+
+    \bibitem{rust_book}
+    KLABNIK, Steve a~Carol NICHOLS. \textit{The Rust Programming Language} [online]. 2nd ed. San Francisco: No Starch Press, 2023 [cit. 2026-10-19]. ISBN 978-1-7185-0310-6. Dostupné z: \url{https://doc.rust-lang.org/book/}
+
+    \bibitem{tauri_docs}
+    TAURI CONTRIBUTORS. \textit{Tauri 2.0 Documentation} [online]. The Tauri Programme within The Commons Conservancy, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://v2.tauri.app/}
+
+    \bibitem{wayland_docs}
+    HØGSBERG, Kristian et al. \textit{Wayland Protocol Specification} [online]. Freedesktop.org, 2025 [cit. 2026-10-19]. Dostupné z: \url{https://wayland.freedesktop.org/docs/html/}
+
+    \bibitem{nodejs_docs}
+    OPENJS FOUNDATION. \textit{Node.js Documentation} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://nodejs.org/docs/latest/api/}
+
+    \bibitem{hono_docs}
+    HONO CONTRIBUTORS. \textit{Hono -- Web framework built on Web Standards} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://hono.dev/docs/}
+
+    \bibitem{sqlite_wal}
+    SQLITE CONSORTIUM. \textit{Write-Ahead Logging in SQLite} [online]. Hipp, Wyrick \& Company, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://www.sqlite.org/wal.html}
+
+    \bibitem{vite_docs}
+    YOU, Evan a~VITE CONTRIBUTORS. \textit{Vite Guide \& Documentation} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://vite.dev/guide/}
+
+    \bibitem{tailwind_docs}
+    TAILWIND LABS. \textit{Tailwind CSS Documentation (v4)} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://tailwindcss.com/docs}
+
+    \bibitem{pdfjs_docs}
+    MOZILLA FOUNDATION. \textit{PDF.js -- Portable Document Format Viewer in JavaScript} [online]. 2026 [cit. 2026-10-19]. Dostupné z: \url{https://mozilla.github.io/pdf.js/}
+
+    \bibitem{vscode_docs}
+    MICROSOFT CORPORATION. \textit{Visual Studio Code Documentation} [online]. Redmond: Microsoft, 2026 [cit. 2026-10-19]. Dostupné z: \url{https://code.visualstudio.com/docs}
+
+    \bibitem{chacon2014git}
+    CHACON, Scott a~Ben STRAUB. \textit{Pro Git} [online]. 2nd ed. New York: Apress, 2014 [cit. 2026-10-19]. ISBN 978-1-4842-0077-3. Dostupné z: \url{https://git-scm.com/book/en/v2}
+
+\end{thebibliography}
+\endgroup
+
+\end{document}
