@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# LaTeX auxiliary files
+*.aux
+*.fls
+*.fdb_latexmk
+*.lof
+*.out
+*.synctex.gz
+*.toc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +31,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
