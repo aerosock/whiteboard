@@ -305,10 +305,10 @@ Děkuji tímto vedoucímu maturitní práce panu \textbf{\VedouciDativ} za odbor
 \Vedouci
 
 \nadpismimoobsah{Abstrakt}
-Cílem této maturitní práce je navrhnout, implementovat a~otestovat multiplatformní digitální poznámkový blok a~virtuální tabuli (whiteboard) s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) a~stránkovaného sešitu formátu A4 s~možností importu PDF. Klientská vrstva je postavena na frameworku Tauri v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvas pro plynulé vektorové vykreslování s~nulovou latencí. Práce řeší bezkolizní kolaborativní synchronizaci v~reálném čase pomocí protokolu WebSocket a~CRDT struktur (Yjs) a~integruje multimodální AI asistent pro kontextové vysvětlování ručně psaných výpočtů a~tvorbu procvičovacích úloh.
+Cílem této maturitní práce je navrhnout, implementovat a~otestovat odlehčený, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vektorové vykreslování s~minimální latencí. Na rozdíl od běžných komerčních řešení je aplikace navržena podle principů Local-First – veškeré poznámky jsou ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti zakládání uživatelského účtu. Součástí projektu je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
 
 \nadpismimoobsah{Klíčová slova}
-digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, WebSocket, umělá inteligence, Vision-Language Model
+digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, anotace PDF, umělá inteligence, multimodální AI
 
 \clearpage
 
@@ -316,10 +316,10 @@ digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeSc
 % STRANA 6: ANOTAČNÍ LIST (ANGLICKY — SUMMARY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Summary}
-The objective of this graduation thesis is to design, implement, and evaluate a~cross-platform digital notebook and collaborative whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges the affordances of an infinite zoomable canvas with structured ISO 216 A4 paginated notebooks and native PDF annotation capabilities. Engineered atop Tauri v2, Rust, and React, the client utilizes a~layered HTML5 Canvas rendering architecture to ensure sub-millisecond stroke latency and consistent 60~FPS performance across desktop environments. Real-time peer synchronization is achieved through WebSocket networking and Conflict-Free Replicated Data Types (Yjs). Furthermore, a~multimodal vision-language assistant is embedded to provide contextual explanations of handwritten equations and automated practice question generation.
+The objective of this graduation thesis is to design, implement, and evaluate a~lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges the affordances of an infinite zoomable canvas (ZUI) for mind mapping with a~structured ISO~216 A4 paginated notebook capable of importing and annotating PDF documents. Engineered atop Tauri~v2, Rust, and React, the client utilizes an immediate-mode HTML5 Canvas rendering architecture to ensure low-latency pen input and smooth 60~FPS performance. In contrast to conventional cloud-dependent solutions, the application follows Local-First design principles, storing notebooks directly on the user's local disk in a~portable format without requiring an account. Furthermore, an interactive multimodal AI tutor is integrated to provide contextual explanations of handwritten calculations and generate automated practice questions.
 
 \nadpismimoobsah{Keywords}
-digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, WebSocket, artificial intelligence, Vision-Language Model
+digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, PDF annotation, artificial intelligence, multimodal AI
 
 \clearpage
 
@@ -341,9 +341,11 @@ digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 C
 
 Při studiu technických oborů a~programování běžné textové procesory jako Microsoft Word nebo Google Docs nestačí. Psaní matematických vzorců, kreslení schémat a~náčrty algoritmů jsou v~nich zdlouhavé a~nepraktické. Mnohem přirozenější je psát a~kreslit volnou rukou na digitálním plátně nebo vpisovat poznámky přímo do přednáškových materiálů ve formátu PDF.
 
-Dostupné aplikace pro digitální poznámky však mají své slabiny. Většina multiplatformních nástrojů je postavena na frameworku Electron, což znamená vysokou spotřebu paměti RAM a~často i~znatelnou odezvu při kreslení perem. Komerční řešení navíc často vyžadují vytvoření online účtu a~ukládání veškerých dat do cloudu. Uživatel tak nemá své soubory plně pod kontrolou a~bez internetového připojení se k~nim nedostane.
+Dostupné aplikace pro digitální poznámky však mají své slabiny. Většina nástrojů nenabízí verzi pro Linux a~zbytek bývá často postaven na frameworku Electron, což znamená vysokou spotřebu paměti RAM a~znatelnou odezvu při kreslení perem kvůli vestavěnému jádru Chromium. Komerční řešení navíc často vyžadují vytvoření online účtu a~ukládání veškerých dat do cloudu. Uživatel tak nemá své soubory plně pod kontrolou a~bez internetového připojení se k~nim nedostane.
 
-Tato práce se zabývá vývojem lehkého digitálního poznámkového bloku, který funguje jako desktopová aplikace pro Linux a~Windows a~lze jej spustit i~ve webovém prohlížeči. Aplikace kombinuje nekonečnou plochu pro myšlenkové mapy se stránkovaným sešitem formátu A4. Poznámky se ukládají primárně lokálně na disk v~přenosném formátu. Součástí je také jednoduchý AI asistent, který pomáhá s~vysvětlením probírané látky nebo tvorbou procvičovacích otázek přímo z~obsahu sešitu.
+Prakticky jedinou rozšířenou aplikací, která se těmto problémům vyhýbá a~funguje nativně na Linuxu, je Xournal++. V~některých ohledech však zaostává za moderními digitálními sešity – chybí jí režim nekonečného plátna, neumožňuje spuštění v~prohlížeči a~její tradiční uživatelské rozhraní schovává řadu funkcí do větvených nabídek či drobných tlačítek, což při ovládání perem a~dotykem působí nepohodlně.
+
+Tato práce se zabývá vývojem lehkého digitálního poznámkového bloku, který spojuje přívětivé rozhraní moderních aplikací s~rychlou a~efektivní Local-First filozofií programu Xournal++. Aplikace funguje jako desktopový program pro Linux a~Windows, lze ji však spustit i~ve webovém prohlížeči či na zařízeních se systémem Android. Projekt kombinuje nekonečnou plochu pro myšlenkové mapy se stránkovaným sešitem formátu A4. Poznámky se ukládají primárně lokálně na disk v~přenosném formátu. Součástí je také jednoduchý AI asistent, který pomáhá s~vysvětlením probírané látky nebo tvorbou procvičovacích otázek přímo z~obsahu sešitu.
 
 % ------------------------------------------------------------------------------
 % 1.1 CÍLE PRÁCE
