@@ -1,14 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Canvas, { CanvasHandle } from "./components/Canvas";
 import Toolbar from "./components/Toolbar";
 import BoardHeader from "./components/BoardHeader";
 import PageSidebar from "./components/PageSidebar";
 import Dashboard from "./components/Dashboard";
-import AuthModal from "./components/AuthModal";
 import SettingsModal from "./components/SettingsModal";
 import { useTheme } from "./hooks/useTheme";
-import { api, User } from "./lib/api";
-import { RemoteCursor } from "./lib/sync";
 import {
   BoardMode,
   PaperStyle,
@@ -28,20 +25,15 @@ interface ActiveBoard {
   pageLayout?: PageLayout;
   pageBackgrounds?: Record<number, string>;
   clampToPages?: boolean;
-  shareCode?: string;
-  synced: boolean;
 }
 
 function App() {
   const { effectiveTheme } = useTheme();
 
-  // Navigation & User State
+  // Navigation State
   const [view, setView] = useState<"dashboard" | "board">("dashboard");
   const [activeBoard, setActiveBoard] = useState<ActiveBoard | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [collaborators, setCollaborators] = useState<RemoteCursor[]>([]);
 
   // Board Mode & Page State
   const [boardMode, setBoardMode] = useState<BoardMode>("infinite");
@@ -60,35 +52,11 @@ function App() {
   const [strokeWidth, setStrokeWidth] = useState(3);
   const canvasRef = useRef<CanvasHandle>(null);
 
-  // Check auth on startup
-  useEffect(() => {
-    api.me().then((currentUser) => {
-      setUser(currentUser);
-    });
-  }, []);
-
-  // Check URL join code (e.g. ?join=code)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const joinCode = params.get("join");
-    if (joinCode) {
-      handleOpenBoard({
-        id: joinCode,
-        title: `Board ${joinCode}`,
-        mode: "infinite",
-        shareCode: joinCode,
-        synced: true,
-      });
-    }
-  }, []);
-
   function handleOpenBoard(board: {
     id: string;
     title: string;
     mode: BoardMode;
     pageLayout?: PageLayout;
-    shareCode?: string;
-    synced: boolean;
   }) {
     // Check if we have local stored metadata
     const local = getLocalBoard(board.id);
@@ -116,17 +84,12 @@ function App() {
       pageLayout: layout,
       pageBackgrounds: bgs,
       clampToPages: clamp,
-      shareCode: board.shareCode,
-      synced: board.synced,
     });
     setView("board");
   }
 
   function handleBackToDashboard() {
     setView("dashboard");
-    if (window.location.search) {
-      window.history.replaceState({}, "", window.location.pathname);
-    }
   }
 
   function saveBoardMeta(updates: Partial<LocalBoard>) {
@@ -144,8 +107,6 @@ function App() {
       pageLayout: updates.pageLayout !== undefined ? updates.pageLayout : pageLayout,
       pageBackgrounds: updates.pageBackgrounds !== undefined ? updates.pageBackgrounds : pageBackgrounds,
       clampToPages: updates.clampToPages !== undefined ? updates.clampToPages : clampToPages,
-      shareCode: activeBoard.shareCode,
-      synced: activeBoard.synced,
       createdAt: local ? local.createdAt : Date.now(),
       updatedAt: Date.now(),
     };
@@ -182,319 +143,280 @@ function App() {
 
   function handleInsertPageAfter(pageIndex: number) {
     const newCount = pageCount + 1;
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
+
+    const shiftedStrokes = oldStrokes.map((s) => {
+      if (s.page && s.page > pageIndex) {
+        return { ...s, page: s.page + 1 };
+      }
+      return s;
+    });
+    const shiftedImages = oldImages.map((i) => {
+      if (i.page && i.page > pageIndex) {
+        return { ...i, page: i.page + 1 };
+      }
+      return i;
+    });
+
     const newBgs: Record<number, string> = {};
-    for (const [pStr, url] of Object.entries(pageBackgrounds)) {
-      const p = Number(pStr);
-      if (p <= pageIndex) {
-        newBgs[p] = url;
+    for (const [k, v] of Object.entries(pageBackgrounds)) {
+      const pNum = Number(k);
+      if (pNum > pageIndex) {
+        newBgs[pNum + 1] = v;
       } else {
-        newBgs[p + 1] = url;
+        newBgs[pNum] = v;
       }
     }
-    setPageBackgrounds(newBgs);
+
     setPageCount(newCount);
     setCurrentPage(pageIndex + 1);
-
+    setPageBackgrounds(newBgs);
     setThumbnails((prev) => {
       const next: Record<number, string> = {};
-      for (const [pStr, url] of Object.entries(prev)) {
-        const p = Number(pStr);
-        if (p <= pageIndex) next[p] = url;
-        else next[p + 1] = url;
+      for (const [k, v] of Object.entries(prev)) {
+        const pNum = Number(k);
+        if (pNum > pageIndex) next[pNum + 1] = v;
+        else next[pNum] = v;
       }
       return next;
     });
 
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      const updatedStrokes = strokes.map((s) => {
-        const p = s.page ?? 1;
-        if (p > pageIndex) {
-          return { ...s, page: p + 1 };
-        }
-        return s;
-      });
-
-      const updatedImages = images.map((img) => {
-        const p = img.page ?? 1;
-        if (p > pageIndex) {
-          return { ...img, page: p + 1 };
-        }
-        return img;
-      });
-
-      canvasRef.current?.setElements(updatedStrokes, updatedImages);
-    }
-
+    canvasRef.current?.setElements(shiftedStrokes, shiftedImages);
     saveBoardMeta({ pageCount: newCount, pageBackgrounds: newBgs });
     setTimeout(() => canvasRef.current?.focusPage(pageIndex + 1), 50);
   }
 
-  function handleClampToPagesChange(clamp: boolean) {
-    setClampToPages(clamp);
-    saveBoardMeta({ clampToPages: clamp });
-  }
-
   function handleInsertPageBefore(pageIndex: number) {
-    if (pageIndex > 1) {
-      handleInsertPageAfter(pageIndex - 1);
-      return;
-    }
     const newCount = pageCount + 1;
-    const newBgs: Record<number, string> = {};
-    for (const [pStr, url] of Object.entries(pageBackgrounds)) {
-      newBgs[Number(pStr) + 1] = url;
-    }
-    setPageBackgrounds(newBgs);
-    setPageCount(newCount);
-    setCurrentPage(1);
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
 
+    const shiftedStrokes = oldStrokes.map((s) => {
+      if (s.page && s.page >= pageIndex) {
+        return { ...s, page: s.page + 1 };
+      }
+      return s;
+    });
+    const shiftedImages = oldImages.map((i) => {
+      if (i.page && i.page >= pageIndex) {
+        return { ...i, page: i.page + 1 };
+      }
+      return i;
+    });
+
+    const newBgs: Record<number, string> = {};
+    for (const [k, v] of Object.entries(pageBackgrounds)) {
+      const pNum = Number(k);
+      if (pNum >= pageIndex) {
+        newBgs[pNum + 1] = v;
+      } else {
+        newBgs[pNum] = v;
+      }
+    }
+
+    setPageCount(newCount);
+    setCurrentPage(pageIndex);
+    setPageBackgrounds(newBgs);
     setThumbnails((prev) => {
       const next: Record<number, string> = {};
-      for (const [pStr, url] of Object.entries(prev)) {
-        next[Number(pStr) + 1] = url;
+      for (const [k, v] of Object.entries(prev)) {
+        const pNum = Number(k);
+        if (pNum >= pageIndex) next[pNum + 1] = v;
+        else next[pNum] = v;
       }
       return next;
     });
 
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      const updatedStrokes = strokes.map((s) => ({
-        ...s,
-        page: (s.page ?? 1) + 1,
-      }));
-
-      const updatedImages = images.map((img) => ({
-        ...img,
-        page: (img.page ?? 1) + 1,
-      }));
-
-      canvasRef.current?.setElements(updatedStrokes, updatedImages);
-    }
-
+    canvasRef.current?.setElements(shiftedStrokes, shiftedImages);
     saveBoardMeta({ pageCount: newCount, pageBackgrounds: newBgs });
-    setTimeout(() => canvasRef.current?.focusPage(1), 50);
+    setTimeout(() => canvasRef.current?.focusPage(pageIndex), 50);
   }
 
   function handleDuplicatePage(pageIndex: number) {
     const newCount = pageCount + 1;
+    const targetPage = pageIndex + 1;
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
+
+    const shiftedStrokes = oldStrokes.map((s) => {
+      if (s.page && s.page > pageIndex) {
+        return { ...s, page: s.page + 1 };
+      }
+      return s;
+    });
+    const shiftedImages = oldImages.map((i) => {
+      if (i.page && i.page > pageIndex) {
+        return { ...i, page: i.page + 1 };
+      }
+      return i;
+    });
+
+    // Copy strokes and images from pageIndex
+    const clonedStrokes = oldStrokes
+      .filter((s) => s.page === pageIndex)
+      .map((s) => ({
+        ...s,
+        id: "s_" + Math.random().toString(36).slice(2, 10),
+        page: targetPage,
+      }));
+    const clonedImages = oldImages
+      .filter((i) => i.page === pageIndex)
+      .map((i) => ({
+        ...i,
+        id: "img_" + Math.random().toString(36).slice(2, 10),
+        page: targetPage,
+      }));
+
     const newBgs: Record<number, string> = {};
-    for (const [pStr, url] of Object.entries(pageBackgrounds)) {
-      const p = Number(pStr);
-      if (p <= pageIndex) {
-        newBgs[p] = url;
+    for (const [k, v] of Object.entries(pageBackgrounds)) {
+      const pNum = Number(k);
+      if (pNum > pageIndex) {
+        newBgs[pNum + 1] = v;
       } else {
-        newBgs[p + 1] = url;
+        newBgs[pNum] = v;
       }
     }
     if (pageBackgrounds[pageIndex]) {
-      newBgs[pageIndex + 1] = pageBackgrounds[pageIndex];
+      newBgs[targetPage] = pageBackgrounds[pageIndex];
     }
 
-    setPageBackgrounds(newBgs);
     setPageCount(newCount);
-    setCurrentPage(pageIndex + 1);
-
+    setCurrentPage(targetPage);
+    setPageBackgrounds(newBgs);
     setThumbnails((prev) => {
       const next: Record<number, string> = {};
-      for (const [pStr, url] of Object.entries(prev)) {
-        const p = Number(pStr);
-        if (p <= pageIndex) next[p] = url;
-        else next[p + 1] = url;
+      for (const [k, v] of Object.entries(prev)) {
+        const pNum = Number(k);
+        if (pNum > pageIndex) next[pNum + 1] = v;
+        else next[pNum] = v;
       }
-      if (prev[pageIndex]) next[pageIndex + 1] = prev[pageIndex];
+      if (prev[pageIndex]) next[targetPage] = prev[pageIndex];
       return next;
     });
 
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      const clonedStrokes: typeof strokes = [];
-      const updatedStrokes = strokes.map((s) => {
-        const p = s.page ?? 1;
-        if (p === pageIndex) {
-          clonedStrokes.push({
-            ...s,
-            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
-            page: pageIndex + 1,
-          });
-          return s;
-        } else if (p > pageIndex) {
-          return { ...s, page: p + 1 };
-        }
-        return s;
-      });
-
-      const clonedImages: typeof images = [];
-      const updatedImages = images.map((img) => {
-        const p = img.page ?? 1;
-        if (p === pageIndex) {
-          clonedImages.push({
-            ...img,
-            id: Math.random().toString(36).slice(2) + Date.now().toString(36),
-            page: pageIndex + 1,
-          });
-          return img;
-        } else if (p > pageIndex) {
-          return { ...img, page: p + 1 };
-        }
-        return img;
-      });
-
-      canvasRef.current?.setElements(
-        [...updatedStrokes, ...clonedStrokes],
-        [...updatedImages, ...clonedImages]
-      );
-    }
-
+    canvasRef.current?.setElements([...shiftedStrokes, ...clonedStrokes], [...shiftedImages, ...clonedImages]);
     saveBoardMeta({ pageCount: newCount, pageBackgrounds: newBgs });
-    setTimeout(() => canvasRef.current?.focusPage(pageIndex + 1), 50);
+    setTimeout(() => canvasRef.current?.focusPage(targetPage), 50);
   }
 
   function handleClearPage(pageIndex: number) {
+    if (!confirm(`Clear all drawings on page ${pageIndex}?`)) return;
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
+
+    const keptStrokes = oldStrokes.filter((s) => s.page !== pageIndex);
+    const keptImages = oldImages.filter((i) => i.page !== pageIndex);
+
+    canvasRef.current?.setElements(keptStrokes, keptImages);
     setThumbnails((prev) => {
       const next = { ...prev };
       delete next[pageIndex];
       return next;
     });
-
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      const updatedStrokes = strokes.filter((s) => (s.page ?? 1) !== pageIndex);
-      const updatedImages = images.filter((img) => (img.page ?? 1) !== pageIndex);
-
-      canvasRef.current?.setElements(updatedStrokes, updatedImages);
-    }
   }
 
   function handleMovePage(fromIndex: number, toIndex: number) {
-    if (fromIndex === toIndex || fromIndex < 1 || toIndex < 1 || fromIndex > pageCount || toIndex > pageCount) {
-      return;
-    }
+    if (fromIndex === toIndex || toIndex < 1 || toIndex > pageCount) return;
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
+
+    const mapIndex = (p: number) => {
+      if (p === fromIndex) return toIndex;
+      if (fromIndex < toIndex && p > fromIndex && p <= toIndex) return p - 1;
+      if (fromIndex > toIndex && p >= toIndex && p < fromIndex) return p + 1;
+      return p;
+    };
+
+    const remappedStrokes = oldStrokes.map((s) => ({
+      ...s,
+      page: s.page ? mapIndex(s.page) : undefined,
+    }));
+    const remappedImages = oldImages.map((i) => ({
+      ...i,
+      page: i.page ? mapIndex(i.page) : undefined,
+    }));
 
     const newBgs: Record<number, string> = {};
-    const bgList: (string | undefined)[] = [];
-    for (let i = 1; i <= pageCount; i++) {
-      bgList.push(pageBackgrounds[i]);
+    for (const [k, v] of Object.entries(pageBackgrounds)) {
+      newBgs[mapIndex(Number(k))] = v;
     }
-    const [movedBg] = bgList.splice(fromIndex - 1, 1);
-    bgList.splice(toIndex - 1, 0, movedBg);
-    bgList.forEach((bg, idx) => {
-      if (bg) newBgs[idx + 1] = bg;
-    });
 
+    setPageBackgrounds(newBgs);
     setThumbnails((prev) => {
-      const thumbList: (string | undefined)[] = [];
-      for (let i = 1; i <= pageCount; i++) {
-        thumbList.push(prev[i]);
-      }
-      const [movedThumb] = thumbList.splice(fromIndex - 1, 1);
-      thumbList.splice(toIndex - 1, 0, movedThumb);
       const next: Record<number, string> = {};
-      thumbList.forEach((t, idx) => {
-        if (t) next[idx + 1] = t;
-      });
+      for (const [k, v] of Object.entries(prev)) {
+        next[mapIndex(Number(k))] = v;
+      }
       return next;
     });
 
-    setPageBackgrounds(newBgs);
     setCurrentPage(toIndex);
-
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      function remapPage(p: number): number {
-        if (p === fromIndex) return toIndex;
-        if (fromIndex < toIndex) {
-          if (p > fromIndex && p <= toIndex) return p - 1;
-        } else {
-          if (p >= toIndex && p < fromIndex) return p + 1;
-        }
-        return p;
-      }
-
-      const updatedStrokes = strokes.map((s) => ({
-        ...s,
-        page: remapPage(s.page ?? 1),
-      }));
-
-      const updatedImages = images.map((img) => ({
-        ...img,
-        page: remapPage(img.page ?? 1),
-      }));
-
-      canvasRef.current?.setElements(updatedStrokes, updatedImages);
-    }
-
+    canvasRef.current?.setElements(remappedStrokes, remappedImages);
     saveBoardMeta({ pageBackgrounds: newBgs });
     setTimeout(() => canvasRef.current?.focusPage(toIndex), 50);
   }
 
   function handleDeletePage(pageIndex: number) {
     if (pageCount <= 1) return;
+    if (!confirm(`Delete page ${pageIndex}? All contents on this page will be deleted.`)) return;
+
     const newCount = pageCount - 1;
+    const oldStrokes = canvasRef.current?.getStrokes() || [];
+    const oldImages = canvasRef.current?.getImages() || [];
+
+    const keptStrokes = oldStrokes
+      .filter((s) => s.page !== pageIndex)
+      .map((s) => {
+        if (s.page && s.page > pageIndex) {
+          return { ...s, page: s.page - 1 };
+        }
+        return s;
+      });
+
+    const keptImages = oldImages
+      .filter((i) => i.page !== pageIndex)
+      .map((i) => {
+        if (i.page && i.page > pageIndex) {
+          return { ...i, page: i.page - 1 };
+        }
+        return i;
+      });
+
     const newBgs: Record<number, string> = {};
-    for (const [pStr, url] of Object.entries(pageBackgrounds)) {
-      const p = Number(pStr);
-      if (p < pageIndex) {
-        newBgs[p] = url;
-      } else if (p > pageIndex) {
-        newBgs[p - 1] = url;
+    for (const [k, v] of Object.entries(pageBackgrounds)) {
+      const pNum = Number(k);
+      if (pNum === pageIndex) continue;
+      if (pNum > pageIndex) {
+        newBgs[pNum - 1] = v;
+      } else {
+        newBgs[pNum] = v;
       }
     }
 
+    const nextCurrent = currentPage > newCount ? newCount : currentPage;
+    setPageCount(newCount);
+    setCurrentPage(nextCurrent);
+    setPageBackgrounds(newBgs);
     setThumbnails((prev) => {
       const next: Record<number, string> = {};
-      for (const [pStr, url] of Object.entries(prev)) {
-        const p = Number(pStr);
-        if (p < pageIndex) next[p] = url;
-        else if (p > pageIndex) next[p - 1] = url;
+      for (const [k, v] of Object.entries(prev)) {
+        const pNum = Number(k);
+        if (pNum === pageIndex) continue;
+        if (pNum > pageIndex) next[pNum - 1] = v;
+        else next[pNum] = v;
       }
       return next;
     });
 
-    setPageBackgrounds(newBgs);
-    setPageCount(newCount);
-    const nextCurrent = Math.min(currentPage, newCount);
-    setCurrentPage(nextCurrent);
-
-    if (boardMode === "notebook") {
-      const strokes = canvasRef.current?.getStrokes() || [];
-      const images = canvasRef.current?.getImages() || [];
-
-      const updatedStrokes = strokes
-        .filter((s) => (s.page ?? 1) !== pageIndex)
-        .map((s) => {
-          const p = s.page ?? 1;
-          if (p > pageIndex) {
-            return { ...s, page: p - 1 };
-          }
-          return s;
-        });
-
-      const updatedImages = images
-        .filter((img) => (img.page ?? 1) !== pageIndex)
-        .map((img) => {
-          const p = img.page ?? 1;
-          if (p > pageIndex) {
-            return { ...img, page: p - 1 };
-          }
-          return img;
-        });
-
-      canvasRef.current?.setElements(updatedStrokes, updatedImages);
-    }
-
+    canvasRef.current?.setElements(keptStrokes, keptImages);
     saveBoardMeta({ pageCount: newCount, pageBackgrounds: newBgs });
     setTimeout(() => canvasRef.current?.focusPage(nextCurrent), 50);
+  }
+
+  function handleClampToPagesChange(clamp: boolean) {
+    setClampToPages(clamp);
+    saveBoardMeta({ clampToPages: clamp });
   }
 
   function handleInsertImage() {
@@ -503,7 +425,9 @@ function App() {
     input.accept = "image/*";
     input.onchange = () => {
       const file = input.files?.[0];
-      if (file) canvasRef.current?.insertImage(file);
+      if (file) {
+        canvasRef.current?.insertImage(file);
+      }
     };
     input.click();
   }
@@ -512,8 +436,9 @@ function App() {
     const dataUrl = canvasRef.current?.exportPng();
     if (!dataUrl) return;
     const a = document.createElement("a");
+    const name = activeBoard?.title || "whiteboard";
     a.href = dataUrl;
-    a.download = `${activeBoard?.title || "whiteboard"}.png`;
+    a.download = `${name.toLowerCase().replace(/[^a-z0-9_-]/g, "_")}.png`;
     a.click();
   }
 
@@ -521,19 +446,9 @@ function App() {
     if (!activeBoard) return;
     const strokes = canvasRef.current?.getStrokes() || [];
     const images = canvasRef.current?.getImages() || [];
-    const local = getLocalBoard(activeBoard.id) || {
-      id: activeBoard.id,
-      title: activeBoard.title,
-      mode: boardMode,
-      paperStyle,
-      pageCount,
-      pageLayout,
-      pageBackgrounds,
-      shareCode: activeBoard.shareCode,
-      synced: activeBoard.synced,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+    const local = getLocalBoard(activeBoard.id);
+    if (!local) return;
+
     exportBoardPackage(local, strokes, images, pageBackgrounds);
   }
 
@@ -544,16 +459,18 @@ function App() {
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
+
       try {
         const { pageImages, pageCount: pdfPages } = await loadPdfPagesAsImages(file);
         const newBgs: Record<number, string> = {};
         pageImages.forEach((img, idx) => {
           newBgs[idx + 1] = img;
         });
+
         setBoardMode("notebook");
         setPageCount(pdfPages);
         setPageBackgrounds(newBgs);
-        setCurrentPage(1);
+        setPaperStyle("blank");
 
         saveBoardMeta({
           mode: "notebook",
@@ -570,29 +487,18 @@ function App() {
     input.click();
   }
 
-  function handleLogout() {
-    api.logout();
-    setUser(null);
-  }
-
   return (
     <div className="h-screen w-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 overflow-hidden text-neutral-900 dark:text-neutral-100 font-sans">
       {view === "dashboard" ? (
         <Dashboard
-          user={user}
           onOpenBoard={handleOpenBoard}
-          onOpenAuth={() => setIsAuthOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
-          onLogout={handleLogout}
         />
       ) : (
         <div className="h-full w-full flex flex-col overflow-hidden">
           <BoardHeader
             title={activeBoard?.title || "Whiteboard"}
             onTitleChange={handleTitleChange}
-            shareCode={activeBoard?.shareCode}
-            collaborators={collaborators}
-            user={user}
             boardMode={boardMode}
             onBoardModeChange={handleBoardModeChange}
             paperStyle={paperStyle}
@@ -604,7 +510,6 @@ function App() {
             isSidebarOpen={isSidebarOpen}
             onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             onBackToDashboard={handleBackToDashboard}
-            onOpenAuth={() => setIsAuthOpen(true)}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onClearCanvas={() => canvasRef.current?.clear()}
             onExportPng={handleExportPng}
@@ -659,13 +564,10 @@ function App() {
               pageLayout={pageLayout}
               pageBackgrounds={pageBackgrounds}
               boardId={activeBoard?.id}
-              roomId={activeBoard?.synced ? activeBoard.id : undefined}
-              userName={user?.name || "Guest"}
               clampToPages={clampToPages}
               onToolChange={setTool}
               onBrushSizeChange={setStrokeWidth}
               onCurrentPageChange={setCurrentPage}
-              onCollaboratorsChange={setCollaborators}
               onThumbnailsUpdate={setThumbnails}
             />
           </div>
@@ -676,25 +578,12 @@ function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        user={user}
-        onLogout={handleLogout}
         paperStyle={paperStyle}
         onPaperStyleChange={handlePaperStyleChange}
         boardMode={boardMode}
         onBoardModeChange={handleBoardModeChange}
         clampToPages={clampToPages}
         onClampToPagesChange={handleClampToPagesChange}
-        pageLayout={pageLayout}
-        onPageLayoutChange={handlePageLayoutChange}
-      />
-
-      {/* Authentication Dialog */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onSuccess={(loggedUser) => {
-          setUser(loggedUser);
-        }}
       />
     </div>
   );

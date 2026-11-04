@@ -14,8 +14,6 @@ export interface LocalBoard {
   pageBackgrounds?: Record<number, string>; // pageIndex -> dataUrl (from PDF or imported document)
   clampToPages?: boolean;
   thumbnail?: string;
-  shareCode?: string;
-  synced: boolean;
   createdAt: number;
   updatedAt: number;
 }

@@ -1,11 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
   ChevronLeft,
-  Share2,
-  Copy,
-  Check,
-  Users,
-  LogIn,
   Settings as SettingsIcon,
   PanelLeft,
   Columns,
@@ -13,17 +8,12 @@ import {
   Edit2,
   LayoutGrid,
 } from "lucide-react";
-import { User } from "../lib/api";
-import { RemoteCursor } from "../lib/sync";
 import { BoardMode, PaperStyle, PageLayout } from "../lib/storage";
 import AppMenu from "./AppMenu";
 
 interface BoardHeaderProps {
   title: string;
   onTitleChange: (newTitle: string) => void;
-  shareCode?: string;
-  collaborators: RemoteCursor[];
-  user: User | null;
   boardMode: BoardMode;
   onBoardModeChange: (mode: BoardMode) => void;
   paperStyle: PaperStyle;
@@ -35,7 +25,6 @@ interface BoardHeaderProps {
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
   onBackToDashboard: () => void;
-  onOpenAuth: () => void;
   onOpenSettings: () => void;
   onClearCanvas: () => void;
   onExportPng: () => void;
@@ -46,9 +35,6 @@ interface BoardHeaderProps {
 export default function BoardHeader({
   title,
   onTitleChange,
-  shareCode,
-  collaborators,
-  user,
   boardMode,
   onBoardModeChange,
   paperStyle,
@@ -60,17 +46,12 @@ export default function BoardHeader({
   isSidebarOpen,
   onToggleSidebar,
   onBackToDashboard,
-  onOpenAuth,
   onOpenSettings,
   onClearCanvas,
   onExportPng,
   onExportWnb,
   onImportPdf,
 }: BoardHeaderProps) {
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-
   // Layout dropdown menu state
   const [showLayoutMenu, setShowLayoutMenu] = useState(false);
   const layoutMenuRef = useRef<HTMLDivElement>(null);
@@ -111,22 +92,6 @@ export default function BoardHeader({
     }
   }
 
-  const shareUrl =
-    typeof window !== "undefined" && shareCode
-      ? `${window.location.origin}${window.location.pathname}?join=${shareCode}`
-      : "";
-
-  function copyToClipboard(text: string, isLink: boolean) {
-    navigator.clipboard.writeText(text);
-    if (isLink) {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    } else {
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
-    }
-  }
-
   return (
     <header data-tauri-drag-region className="px-3 py-1.5 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 select-none flex-shrink-0 z-20">
       {/* Left Section: App Menu + Sidebar Toggle + Dashboard Button + Title */}
@@ -152,101 +117,96 @@ export default function BoardHeader({
                 ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                 : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
             }`}
-            title="Toggle Page Sidebar"
+            title={isSidebarOpen ? "Close Page Manager (Ctrl+\\)" : "Open Page Manager (Ctrl+\\)"}
           >
             <PanelLeft size={15} />
           </button>
         )}
 
-        <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
-
         <button
           onClick={onBackToDashboard}
-          className="flex items-center gap-1 px-1.5 py-1 rounded text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-          title="Back to Whiteboards"
+          className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          title="Back to All Notes"
         >
-          <ChevronLeft size={14} />
-          <span>Boards</span>
+          <ChevronLeft size={16} />
         </button>
 
-        <span className="text-neutral-300 dark:text-neutral-700">/</span>
-
-        {/* Inline Editable Title */}
-        {isEditingTitle ? (
-          <input
-            ref={titleInputRef}
-            type="text"
-            value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
-            onBlur={handleCommitTitle}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCommitTitle();
-              if (e.key === "Escape") {
-                setEditedTitle(title);
-                setIsEditingTitle(false);
-              }
-            }}
-            className="px-1.5 py-0.5 text-xs font-semibold rounded border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-400 max-w-xs"
-          />
-        ) : (
-          <div
-            onClick={() => setIsEditingTitle(true)}
-            className="group flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors max-w-xs"
-            title="Click to rename whiteboard"
-          >
-            <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-              {title || "Untitled"}
-            </span>
-            <Edit2
-              size={11}
-              className="text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+        {/* Editable Board Title */}
+        <div className="flex items-center ml-1">
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              onBlur={handleCommitTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCommitTitle();
+                if (e.key === "Escape") {
+                  setEditedTitle(title);
+                  setIsEditingTitle(false);
+                }
+              }}
+              className="px-2 py-0.5 text-xs font-semibold rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 outline-none w-48 shadow-2xs"
             />
-          </div>
-        )}
-
-        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-          {boardMode}
-        </span>
+          ) : (
+            <div
+              onClick={() => setIsEditingTitle(true)}
+              className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+              title="Click to rename"
+            >
+              <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate max-w-[220px]">
+                {title || (boardMode === "notebook" ? "Untitled Notebook" : "Untitled Whiteboard")}
+              </span>
+              <Edit2
+                size={11}
+                className="opacity-0 group-hover:opacity-40 text-neutral-500 transition-opacity"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Center Section: Continuous Page & Layout Status (Notebook Mode) */}
+      {/* Middle Section: Notebook Mode Controls */}
       {boardMode === "notebook" && (
-        <div className="flex items-center gap-1.5 bg-white dark:bg-neutral-800/90 px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-          <span className="text-xs font-mono font-medium text-neutral-700 dark:text-neutral-300 px-1">
-            Page {currentPage} of {pageCount}
-          </span>
+        <div className="flex items-center gap-2">
+          {/* Page Indicator */}
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300 text-xs font-medium">
+            <span>Page</span>
+            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+              {currentPage}
+            </span>
+            <span className="text-neutral-400">/</span>
+            <span>{pageCount}</span>
+          </div>
 
-          <div className="w-px h-3.5 bg-neutral-200 dark:bg-neutral-700 mx-0.5" />
-
-          {/* View mode toggle & layout menu */}
+          {/* Page Layout Selector Dropdown */}
           <div className="relative" ref={layoutMenuRef}>
             <button
               onClick={() => setShowLayoutMenu(!showLayoutMenu)}
-              className="p-1 rounded text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1"
-              title="Change Sheet Grid & Layout"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/80 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs transition-colors"
+              title="Change Page Layout & Grid Structure"
             >
-              {pageLayout === "single" ? (
-                <Square size={13} />
-              ) : pageLayout === "double" ? (
-                <Columns size={13} />
-              ) : (
-                <LayoutGrid size={13} />
-              )}
+              {pageLayout === "single" && <Square size={13} />}
+              {pageLayout === "double" && <Columns size={13} />}
+              {pageLayout === "horizontal" && <Columns size={13} className="rotate-90" />}
+              {pageLayout.startsWith("grid") && <LayoutGrid size={13} />}
+              <span className="capitalize text-[11px] font-medium">{pageLayout}</span>
             </button>
 
             {showLayoutMenu && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-8 z-50 min-w-[170px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-xl py-1 text-xs text-neutral-800 dark:text-neutral-200 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-800">
-                  Sheet Layout
+              <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 w-44 py-1 bg-white dark:bg-neutral-900 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-800 text-xs z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-neutral-400 font-semibold border-b border-neutral-100 dark:border-neutral-800/60">
+                  Page Layout
                 </div>
                 {[
-                  { id: "single" as PageLayout, label: "Single Column", sub: "1 Sheet Wide" },
-                  { id: "double" as PageLayout, label: "Facing Spread", sub: "Book Spine" },
-                  { id: "horizontal" as PageLayout, label: "Horizontal Line", sub: "1 Long Row" },
-                  { id: "grid-3" as PageLayout, label: "3 Columns Grid", sub: "3 Sheets Wide" },
-                  { id: "grid-4" as PageLayout, label: "4 Columns Grid", sub: "4 Sheets Wide" },
-                  { id: "grid-6" as PageLayout, label: "6 Columns Grid", sub: "6 Sheets Wide" },
-                ].map((opt) => (
+                  { id: "single", label: "Single Page", sub: "Standard notebook view" },
+                  { id: "double", label: "2-Page Spread", sub: "Book side-by-side" },
+                  { id: "horizontal", label: "Horizontal Strip", sub: "Wide banner continuous" },
+                  { id: "grid-4", label: "2×2 Grid (4-up)", sub: "Slide comparison" },
+                  { id: "grid-6", label: "2×3 Grid (6-up)", sub: "Exam summary view" },
+                  { id: "grid-3", label: "3-Column Strip", sub: "Multi-subject layout" },
+                ].map((opt: any) => (
                   <button
                     key={opt.id}
                     onClick={() => {
@@ -255,7 +215,7 @@ export default function BoardHeader({
                     }}
                     className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
                       pageLayout === opt.id
-                        ? "font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20"
+                        ? "font-semibold text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800"
                         : ""
                     }`}
                   >
@@ -264,7 +224,7 @@ export default function BoardHeader({
                       <div className="text-[10px] text-neutral-400 font-normal">{opt.sub}</div>
                     </div>
                     {pageLayout === opt.id && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-neutral-100" />
                     )}
                   </button>
                 ))}
@@ -274,35 +234,8 @@ export default function BoardHeader({
         </div>
       )}
 
-      {/* Right Section: Collaborators, Share, Settings & Profile */}
+      {/* Right Section: Settings */}
       <div className="flex items-center gap-2">
-        {collaborators.length > 0 && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs">
-            <Users size={12} />
-            <span>{collaborators.length + 1}</span>
-            <div className="flex -space-x-1 ml-0.5">
-              {collaborators.slice(0, 3).map((c) => (
-                <span
-                  key={c.id}
-                  className="w-2 h-2 rounded-full border border-white dark:border-neutral-900"
-                  style={{ backgroundColor: c.color }}
-                  title={c.name}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {shareCode && (
-          <button
-            onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 text-xs font-medium transition-colors shadow-2xs"
-          >
-            <Share2 size={12} />
-            <span>Share</span>
-          </button>
-        )}
-
         <button
           onClick={onOpenSettings}
           className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -310,104 +243,7 @@ export default function BoardHeader({
         >
           <SettingsIcon size={15} />
         </button>
-
-        {user ? (
-          <div
-            className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center text-[10px] font-bold"
-            title={user.name || user.email}
-          >
-            {(user.name || user.email).charAt(0).toUpperCase()}
-          </div>
-        ) : (
-          <button
-            onClick={onOpenAuth}
-            className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            title="Sign In"
-          >
-            <LogIn size={15} />
-          </button>
-        )}
       </div>
-
-      {/* Share Modal Dialog */}
-      {showShareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Share Whiteboard
-              </h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-sm p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Anyone with this share code or link can join and draw in real time without signing in.
-            </p>
-
-            <div className="space-y-1">
-              <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
-                Share Code
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  readOnly
-                  value={shareCode}
-                  className="flex-1 px-3 py-1.5 text-xs font-mono rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 select-all"
-                />
-                <button
-                  onClick={() => copyToClipboard(shareCode || "", false)}
-                  className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-                  title="Copy Code"
-                >
-                  {copiedCode ? (
-                    <Check size={14} className="text-neutral-900 dark:text-neutral-100" />
-                  ) : (
-                    <Copy size={14} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {shareUrl && (
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
-                  Direct Join Link
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    readOnly
-                    value={shareUrl}
-                    className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 truncate select-all"
-                  />
-                  <button
-                    onClick={() => copyToClipboard(shareUrl, true)}
-                    className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-                    title="Copy Link"
-                  >
-                    {copiedLink ? (
-                      <Check size={14} className="text-neutral-900 dark:text-neutral-100" />
-                    ) : (
-                      <Copy size={14} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowShareModal(false)}
-              className="w-full py-2 bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 text-xs font-medium rounded-lg transition-colors"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
     </header>
   );
 }

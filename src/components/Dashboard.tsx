@@ -1,20 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Trash2,
-  Share2,
-  LogIn,
-  LogOut,
   Clock,
   LayoutGrid,
   FileText,
   Settings as SettingsIcon,
-  HardDrive,
-  Cloud,
   FileUp,
-  Plus,
   X,
+  BookOpen,
 } from "lucide-react";
-import { api, Board, User } from "../lib/api";
 import {
   BoardMode,
   LocalBoard,
@@ -27,31 +21,21 @@ import {
 import { importBoardPackage, loadPdfPagesAsImages } from "../lib/document";
 
 interface DashboardProps {
-  user: User | null;
   onOpenBoard: (board: {
     id: string;
     title: string;
     mode: BoardMode;
     pageLayout?: PageLayout;
-    shareCode?: string;
-    synced: boolean;
   }) => void;
-  onOpenAuth: () => void;
   onOpenSettings: () => void;
-  onLogout: () => void;
 }
 
 export default function Dashboard({
-  user,
   onOpenBoard,
-  onOpenAuth,
   onOpenSettings,
-  onLogout,
 }: DashboardProps) {
   const [localBoards, setLocalBoards] = useState<LocalBoard[]>([]);
-  const [cloudBoards, setCloudBoards] = useState<Board[]>([]);
-  const [joinCode, setJoinCode] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "infinite" | "notebook">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "notebook" | "infinite">("all");
   const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,21 +49,7 @@ export default function Dashboard({
 
   useEffect(() => {
     setLocalBoards(getLocalBoards());
-    if (user) {
-      loadCloudBoards();
-    } else {
-      setCloudBoards([]);
-    }
-  }, [user]);
-
-  async function loadCloudBoards() {
-    try {
-      const data = await api.getBoards();
-      setCloudBoards(data.owned || []);
-    } catch (err: any) {
-      console.log("Could not load cloud boards:", err.message);
-    }
-  }
+  }, []);
 
   function handleCreateBoard(
     mode: BoardMode,
@@ -90,7 +60,6 @@ export default function Dashboard({
     const defaultTitle = mode === "notebook" ? "Untitled Notebook" : "Untitled Whiteboard";
     const finalTitle = title?.trim() || defaultTitle;
     const id = "b_" + Math.random().toString(36).slice(2, 10);
-    const code = Math.random().toString(36).slice(2, 8);
 
     const newBoard: LocalBoard = {
       id,
@@ -100,8 +69,6 @@ export default function Dashboard({
       pageCount: 1,
       pageLayout: layout || "single",
       clampToPages: true,
-      shareCode: code,
-      synced: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -115,8 +82,6 @@ export default function Dashboard({
       title: newBoard.title,
       mode: newBoard.mode,
       pageLayout: newBoard.pageLayout,
-      shareCode: newBoard.shareCode,
-      synced: false,
     });
   }
 
@@ -141,7 +106,6 @@ export default function Dashboard({
         });
 
         const id = "b_" + Math.random().toString(36).slice(2, 10);
-        const code = Math.random().toString(36).slice(2, 8);
         const title = file.name.replace(/\.pdf$/i, "");
 
         const newBoard: LocalBoard = {
@@ -152,8 +116,6 @@ export default function Dashboard({
           pageCount,
           pageLayout: "single",
           pageBackgrounds,
-          shareCode: code,
-          synced: false,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -165,8 +127,6 @@ export default function Dashboard({
           title: newBoard.title,
           mode: newBoard.mode,
           pageLayout: newBoard.pageLayout,
-          shareCode: newBoard.shareCode,
-          synced: false,
         });
       } else {
         // .wnb or .json board package
@@ -181,8 +141,6 @@ export default function Dashboard({
           title: imported.board.title,
           mode: imported.board.mode,
           pageLayout: imported.board.pageLayout,
-          shareCode: imported.board.shareCode,
-          synced: false,
         });
       }
     } catch (err: any) {
@@ -190,35 +148,6 @@ export default function Dashboard({
     } finally {
       setLoadingMsg("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  async function handleJoinCode(e: React.FormEvent) {
-    e.preventDefault();
-    const code = joinCode.trim();
-    if (!code) return;
-
-    setError("");
-    try {
-      const res = await api.getBoard(code);
-      if (res.board) {
-        onOpenBoard({
-          id: res.board.id,
-          title: res.board.title,
-          mode: "infinite",
-          shareCode: res.board.share_code,
-          synced: true,
-        });
-        return;
-      }
-    } catch {
-      onOpenBoard({
-        id: code,
-        title: `Board ${code}`,
-        mode: "infinite",
-        shareCode: code,
-        synced: true,
-      });
     }
   }
 
@@ -253,7 +182,14 @@ export default function Dashboard({
 
       {/* Header */}
       <header data-tauri-drag-region className="px-6 py-3 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-        <div />
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+            Whiteboard
+          </span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+            Local-First
+          </span>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* Import File Button */}
@@ -263,7 +199,7 @@ export default function Dashboard({
             title="Import .wnb board file or PDF document"
           >
             <FileUp size={14} />
-            <span>Import Document / File</span>
+            <span>Import Document</span>
           </button>
 
           {/* Settings button */}
@@ -274,29 +210,6 @@ export default function Dashboard({
           >
             <SettingsIcon size={16} />
           </button>
-
-          {user ? (
-            <div className="flex items-center gap-2 pl-2 border-l border-neutral-200 dark:border-neutral-800">
-              <span className="text-xs text-neutral-600 dark:text-neutral-400 font-medium">
-                {user.name || user.email}
-              </span>
-              <button
-                onClick={onLogout}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                title="Sign Out"
-              >
-                <LogOut size={15} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-medium transition-colors"
-            >
-              <LogIn size={13} />
-              <span>Sign In</span>
-            </button>
-          )}
         </div>
       </header>
 
@@ -311,7 +224,7 @@ export default function Dashboard({
 
         {/* Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Unified Create Board Hero Card */}
+          {/* Create Notebook Card */}
           <div
             onClick={() => {
               setNewBoardTitle("");
@@ -324,13 +237,31 @@ export default function Dashboard({
           >
             <div className="space-y-2">
               <div className="w-9 h-9 rounded-lg bg-neutral-800 dark:bg-neutral-700 flex items-center justify-center text-white">
-                <Plus size={18} />
+                <BookOpen size={18} />
               </div>
               <h3 className="text-base font-semibold tracking-tight text-white">
-                New Board
+                New Notebook
               </h3>
               <p className="text-xs text-neutral-300 dark:text-neutral-300">
-                Create an infinite whiteboard or paginated notebook with custom paper grids.
+                A4 paginated notebook with lined, grid, or dot ruling for school notes and study sheets.
+              </p>
+            </div>
+          </div>
+
+          {/* Create Infinite Whiteboard Card */}
+          <div
+            onClick={() => handleCreateBoard("infinite")}
+            className="group p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between space-y-4"
+          >
+            <div className="space-y-1.5">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
+                <LayoutGrid size={16} />
+              </div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                Infinite Whiteboard
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Unbounded 2D Euclidean canvas for freeform diagrams, mind maps, and sketches.
               </p>
             </div>
           </div>
@@ -345,44 +276,12 @@ export default function Dashboard({
                 <FileUp size={16} />
               </div>
               <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Import File or PDF
+                Import PDF / File
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Open multi-page PDF documents for handwritten markup or load .wnb backups.
+                Open multi-page PDF documents for handwritten markup or load .wnb notebook backups.
               </p>
             </div>
-          </div>
-
-          {/* Join with Code Card */}
-          <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-4">
-            <div className="space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-                <Share2 size={16} />
-              </div>
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Join with Code
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Enter a share code to join a collaborative board as a guest.
-              </p>
-            </div>
-
-            <form onSubmit={handleJoinCode} className="flex gap-1.5">
-              <input
-                type="text"
-                placeholder="e.g. abc-def"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value)}
-                className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-mono rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600"
-              />
-              <button
-                type="submit"
-                disabled={!joinCode.trim()}
-                className="px-3 py-1.5 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-30"
-              >
-                Join
-              </button>
-            </form>
           </div>
         </div>
 
@@ -398,8 +297,8 @@ export default function Dashboard({
             <div className="flex items-center gap-1">
               {[
                 { id: "all", label: "All Boards" },
-                { id: "infinite", label: "Infinite Canvases" },
                 { id: "notebook", label: "Notebooks" },
+                { id: "infinite", label: "Infinite Canvases" },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -426,7 +325,7 @@ export default function Dashboard({
                 No boards found
               </p>
               <p className="text-[11px] text-neutral-400">
-                Create an Infinite Canvas or Paged Notebook above, or import a PDF document.
+                Create a Notebook or Infinite Canvas above, or import a PDF study material.
               </p>
             </div>
           ) : (
@@ -442,29 +341,27 @@ export default function Dashboard({
                         title: b.title,
                         mode: b.mode,
                         pageLayout: b.pageLayout,
-                        shareCode: b.shareCode,
-                        synced: b.synced,
                       })
                     }
                     className="group relative p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
                   >
                     <div>
-                      {/* Thumbnail Preview Container */}
-                      <div className="w-full h-32 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-800 overflow-hidden flex items-center justify-center mb-3">
+                      {/* Thumbnail Preview */}
+                      <div className="w-full h-32 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-800 overflow-hidden flex items-center justify-center mb-3">
                         {thumb ? (
                           <img
                             src={thumb}
                             alt={b.title}
-                            className="w-full h-full object-contain pointer-events-none"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="flex flex-col items-center gap-1.5 text-neutral-400">
                             {b.mode === "notebook" ? (
-                              <FileText size={22} className="opacity-40" />
+                              <FileText size={24} className="opacity-40" />
                             ) : (
-                              <LayoutGrid size={22} className="opacity-40" />
+                              <LayoutGrid size={24} className="opacity-40" />
                             )}
-                            <span className="text-[10px] font-mono opacity-50">Empty Board</span>
+                            <span className="text-[10px] font-mono opacity-50">Empty Canvas</span>
                           </div>
                         )}
                       </div>
@@ -473,14 +370,16 @@ export default function Dashboard({
                         <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                           {b.title}
                         </h4>
-                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 shrink-0">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 uppercase">
                           {b.mode}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
-                        <Clock size={11} />
-                        <span>{new Date(b.updatedAt).toLocaleDateString()}</span>
+                      <div className="flex items-center gap-2 text-[11px] text-neutral-400 mt-1">
+                        <div className="flex items-center gap-1">
+                          <Clock size={11} />
+                          <span>{new Date(b.updatedAt).toLocaleDateString()}</span>
+                        </div>
                         {b.mode === "notebook" && (
                           <span>• {b.pageCount || 1} {b.pageCount === 1 ? "page" : "pages"}</span>
                         )}
@@ -488,15 +387,14 @@ export default function Dashboard({
                     </div>
 
                     <div className="flex items-center justify-between pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px]">
-                      <span className="flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-mono text-[10px]">
-                        <HardDrive size={11} />
-                        <span>Local</span>
+                      <span className="text-neutral-400 text-[10px] uppercase font-mono">
+                        {b.paperStyle || "plain"}
                       </span>
 
                       <button
                         onClick={(e) => handleDeleteLocal(b.id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-neutral-400 hover:text-red-500 transition-opacity"
-                        title="Delete board"
+                        className="p-1 rounded text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        title="Delete Board"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -506,245 +404,101 @@ export default function Dashboard({
               })}
             </div>
           )}
-
-          {/* Cloud Boards Section */}
-          {cloudBoards.length > 0 && (
-            <div className="pt-6 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                  <Cloud size={13} />
-                  <span>Cloud / Shared Boards</span>
-                </div>
-                <span className="text-xs text-neutral-400 font-mono">{cloudBoards.length}</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {cloudBoards.map((cb) => (
-                  <div
-                    key={cb.id}
-                    onClick={() =>
-                      onOpenBoard({
-                        id: cb.id,
-                        title: cb.title,
-                        mode: "infinite",
-                        shareCode: cb.share_code,
-                        synced: true,
-                      })
-                    }
-                    className="group relative p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Cloud board icon preview */}
-                      <div className="w-full h-32 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-800 overflow-hidden flex items-center justify-center mb-3">
-                        <div className="flex flex-col items-center gap-1.5 text-neutral-400">
-                          <Cloud size={24} className="opacity-40" />
-                          <span className="text-[10px] font-mono opacity-50">Shared Workspace</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                          {cb.title}
-                        </h4>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                          {cb.share_code}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
-                        <Clock size={11} />
-                        <span>{new Date(cb.updated_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px]">
-                      <span className="flex items-center gap-1 text-neutral-400 font-mono text-[10px]">
-                        <Cloud size={11} />
-                        <span>Cloud</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
-      {/* Unified Board Creation Modal */}
+      {/* Unified Create Board Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
-              <div>
-                <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                  Create New Board
-                </h2>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  Choose between an infinite whiteboard or a paginated notebook.
-                </p>
-              </div>
+          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                Create New Board
+              </h3>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-sm p-1"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
-            {/* Form Body */}
-            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-              {/* Board Type Selection */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Board Type
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div
-                    onClick={() => {
-                      setNewBoardMode("notebook");
-                      if (newBoardPaper === "dots") setNewBoardPaper("lined");
-                    }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
-                      newBoardMode === "notebook"
-                        ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 shadow-2xs"
-                        : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-800/30"
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-900 dark:text-neutral-100">
-                      <FileText size={16} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                        Paginated Notebook
-                      </div>
-                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">
-                        A4 pages, margins, thumbnail list, slide sorting, and PDF markup.
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                Title
+              </label>
+              <input
+                type="text"
+                placeholder={newBoardMode === "notebook" ? "e.g. Physics Notes" : "e.g. Project Brainstorm"}
+                value={newBoardTitle}
+                onChange={(e) => setNewBoardTitle(e.target.value)}
+                autoFocus
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600"
+              />
+            </div>
 
-                  <div
-                    onClick={() => {
-                      setNewBoardMode("infinite");
-                      if (newBoardPaper === "lined") setNewBoardPaper("dots");
-                    }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
-                      newBoardMode === "infinite"
-                        ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 shadow-2xs"
-                        : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-800/30"
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-900 dark:text-neutral-100">
-                      <LayoutGrid size={16} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                        Infinite Whiteboard
-                      </div>
-                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">
-                        Freeform boundless space with smooth zoom, pan, and diagrams.
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                Mode
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNewBoardMode("notebook")}
+                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
+                    newBoardMode === "notebook"
+                      ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
+                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                  }`}
+                >
+                  <BookOpen size={13} />
+                  <span>Notebook (A4)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewBoardMode("infinite")}
+                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
+                    newBoardMode === "infinite"
+                      ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
+                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                  }`}
+                >
+                  <LayoutGrid size={13} />
+                  <span>Infinite Canvas</span>
+                </button>
               </div>
+            </div>
 
-              {/* Title input */}
+            {newBoardMode === "notebook" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Title
+                <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Paper Grid
                 </label>
-                <input
-                  type="text"
-                  placeholder={newBoardMode === "notebook" ? "Untitled Notebook" : "Untitled Whiteboard"}
-                  value={newBoardTitle}
-                  onChange={(e) => setNewBoardTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-500"
-                />
-              </div>
-
-              {/* Paper Style */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Paper Pattern
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { id: "lined" as PaperStyle, label: "Lined" },
-                    { id: "grid" as PaperStyle, label: "Grid" },
-                    { id: "dots" as PaperStyle, label: "Dots" },
-                    { id: "blank" as PaperStyle, label: "Blank" },
-                  ].map((p) => (
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(["lined", "grid", "dots", "blank"] as PaperStyle[]).map((p) => (
                     <button
-                      key={p.id}
+                      key={p}
                       type="button"
-                      onClick={() => setNewBoardPaper(p.id)}
-                      className={`py-2 px-3 text-xs rounded-lg border font-medium transition-all ${
-                        newBoardPaper === p.id
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                          : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                      onClick={() => setNewBoardPaper(p)}
+                      className={`py-1.5 rounded-lg border text-xs capitalize transition-colors ${
+                        newBoardPaper === p
+                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
+                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                       }`}
                     >
-                      {p.label}
+                      {p}
                     </button>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Notebook Layout option if notebook mode */}
-              {newBoardMode === "notebook" && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                    Sheet Layout
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: "single" as PageLayout, label: "Single Col" },
-                      { id: "double" as PageLayout, label: "Facing Spread" },
-                      { id: "horizontal" as PageLayout, label: "Horizontal" },
-                      { id: "grid-3" as PageLayout, label: "3-Col Grid" },
-                      { id: "grid-4" as PageLayout, label: "4-Col Grid" },
-                      { id: "grid-6" as PageLayout, label: "6-Col Grid" },
-                    ].map((l) => (
-                      <button
-                        key={l.id}
-                        type="button"
-                        onClick={() => setNewBoardLayout(l.id)}
-                        className={`py-1.5 px-2 text-[11px] rounded-lg border font-medium transition-all ${
-                          newBoardLayout === l.id
-                            ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                            : "border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                        }`}
-                      >
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-2.5 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/30">
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="px-3.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  handleCreateBoard(newBoardMode, newBoardTitle, newBoardPaper, newBoardLayout)
-                }
-                className="px-4 py-1.5 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-semibold rounded-lg hover:opacity-90 shadow-2xs transition-all"
-              >
-                Create Board
-              </button>
-            </div>
+            <button
+              onClick={() => handleCreateBoard(newBoardMode, newBoardTitle, newBoardPaper, newBoardLayout)}
+              className="w-full py-2 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Create {newBoardMode === "notebook" ? "Notebook" : "Whiteboard"}
+            </button>
           </div>
         </div>
       )}

@@ -1,7 +1,5 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { getStroke } from "perfect-freehand";
-import { setupBoardSync, BoardSync, RemoteCursor } from "../lib/sync";
-import { api } from "../lib/api";
 import { BoardMode, PaperStyle, PageLayout, getLocalBoard, saveLocalBoard } from "../lib/storage";
 import { EffectiveTheme } from "../hooks/useTheme";
 import { getNativeClipboardImage } from "../lib/window";
@@ -63,13 +61,10 @@ interface CanvasProps {
   pageLayout: PageLayout;
   pageBackgrounds?: Record<number, string>;
   boardId?: string;
-  roomId?: string;
-  userName?: string;
   clampToPages?: boolean;
   onToolChange?: (tool: string) => void;
   onBrushSizeChange?: (newSize: number) => void;
   onCurrentPageChange?: (page: number) => void;
-  onCollaboratorsChange?: (collaborators: RemoteCursor[]) => void;
   onThumbnailsUpdate?: (thumbnails: Record<number, string>) => void;
 }
 
@@ -179,13 +174,10 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       pageLayout,
       pageBackgrounds = {},
       boardId,
-      roomId,
-      userName = "Guest",
       clampToPages = true,
       onToolChange,
       onBrushSizeChange,
       onCurrentPageChange,
-      onCollaboratorsChange,
       onThumbnailsUpdate,
     },
     ref,
@@ -194,7 +186,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     const bgRef = useRef<HTMLCanvasElement>(null);
     const mainRef = useRef<HTMLCanvasElement>(null);
     const drawRef = useRef<HTMLCanvasElement>(null);
-    const cursorsRef = useRef<HTMLCanvasElement>(null);
 
     // Canvas state
     const isDrawing = useRef(false);
@@ -236,10 +227,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         prev: { x: number; y: number } | number[][];
       }[]
     >([]);
-
-    // Real-time collaboration
-    const syncRef = useRef<BoardSync | null>(null);
-    const remoteCursors = useRef<RemoteCursor[]>([]);
 
     // Mirror props into refs
     const toolRef = useRef(tool);
@@ -448,69 +435,12 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     }
 
     // -------------------------
-    //  Real-time Yjs Setup
-    // -------------------------
-
-    useEffect(() => {
-      if (!roomId) {
-        syncRef.current = null;
-        remoteCursors.current = [];
-        onCollaboratorsChange?.([]);
-        return;
-      }
-
-      const sync = setupBoardSync(
-        roomId,
-        userName,
-        () => {
-          syncFromYjs();
-        },
-        (cursors) => {
-          remoteCursors.current = cursors;
-          onCollaboratorsChange?.(cursors);
-          drawRemoteCursors();
-        },
-      );
-
-      syncRef.current = sync;
-      syncFromYjs();
-
-      return () => {
-        sync.destroy();
-        syncRef.current = null;
-      };
-    }, [roomId, userName]);
-
-    function syncFromYjs() {
-      if (!syncRef.current) return;
-
-      const yStrokes = Array.from(syncRef.current.strokesMap.values()) as StrokeData[];
-      yStrokes.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-      strokes.current = yStrokes;
-
-      const yImages = Array.from(syncRef.current.imagesMap.values()) as ImageElement[];
-      yImages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-      images.current = yImages;
-
-      for (const img of yImages) {
-        if (!imageCache.current.has(img.src)) {
-          const domImg = new Image();
-          domImg.src = img.src;
-          domImg.onload = () => redrawMain();
-          imageCache.current.set(img.src, domImg);
-        }
-      }
-
-      redrawMain();
-    }
-
-    // -------------------------
     //  Offline / Local Persistence & Camera State
     // -------------------------
 
     const persistTimer = useRef<any>(null);
     function persistLocalData(immediate = false) {
-      if (syncRef.current || !boardIdRef.current) return;
+      if (!boardIdRef.current) return;
       const doPersist = () => {
         const id = boardIdRef.current;
         if (!id) return;
@@ -677,7 +607,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     }
 
     useEffect(() => {
-      if (!roomId && boardId) {
+      if (boardId) {
         try {
           const rawStrokes = localStorage.getItem(`wb_strokes_${boardId}`);
           const parsedStrokes: StrokeData[] = rawStrokes ? JSON.parse(rawStrokes) : [];
@@ -721,7 +651,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         undoStack.current = [];
         redoStack.current = [];
       }
-    }, [boardId, roomId]);
+    }, [boardId]);
 
     // Initial Camera Load / Auto-center on Page 1
     useEffect(() => {
@@ -1720,59 +1650,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     function redrawAll() {
       drawBackground();
       redrawMain();
-      drawRemoteCursors();
       if (selection.current.size > 0) drawSelectionOverlay();
       checkActivePage();
-    }
-
-    // -------------------------
-    //  Collaborator Cursors Overlay
-    // -------------------------
-
-    function drawRemoteCursors() {
-      const canvas = cursorsRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const dpr = getDpr();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (remoteCursors.current.length === 0) return;
-      const c = cam.current;
-
-      for (const cursor of remoteCursors.current) {
-        const sx = cursor.x * c.zoom + c.x;
-        const sy = cursor.y * c.zoom + c.y;
-
-        ctx.save();
-        ctx.translate(sx * dpr, sy * dpr);
-
-        ctx.fillStyle = cursor.color;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, 16);
-        ctx.lineTo(5, 12);
-        ctx.lineTo(11, 12);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.font = `600 ${11 * dpr}px sans-serif`;
-        const textPad = 6 * dpr;
-        const textWidth = ctx.measureText(cursor.name).width;
-        const boxH = 18 * dpr;
-        const boxW = textWidth + textPad * 2;
-
-        ctx.fillStyle = cursor.color;
-        ctx.beginPath();
-        ctx.roundRect(10 * dpr, 10 * dpr, boxW, boxH, 4 * dpr);
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(cursor.name, 10 * dpr + textPad, 10 * dpr + 13 * dpr);
-
-        ctx.restore();
-      }
     }
 
     // -------------------------
@@ -1907,30 +1786,15 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     //  Image Insertion
     // -------------------------
 
-    async function handleInsertImageFile(file: File) {
-      let url = "";
-      try {
-        const res = await api.uploadImage(file);
-        if (res.url) {
-          url = api.getImageUrl(res.url);
+    function handleInsertImageFile(file: File) {
+      // Read file as base64 data URL so it can be saved offline and exported
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          loadAndInsertImage(reader.result);
         }
-      } catch (err) {
-        console.log("[image] local fallback for upload:", err);
-      }
-
-      if (!url) {
-        // Read file as base64 data URL so it can be saved offline and exported
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === "string") {
-            loadAndInsertImage(reader.result);
-          }
-        };
-        reader.readAsDataURL(file);
-        return;
-      }
-
-      loadAndInsertImage(url);
+      };
+      reader.readAsDataURL(file);
     }
 
     function loadAndInsertImage(url: string) {
@@ -1975,10 +1839,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
         undoStack.current.push({ type: "add_image", image: element });
         redoStack.current = [];
-
-        if (syncRef.current) {
-          syncRef.current.imagesMap.set(element.id, element);
-        }
 
         redrawMain();
         persistLocalData();
@@ -2058,11 +1918,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         });
         redoStack.current = [];
 
-        if (syncRef.current) {
-          for (const s of erasedStrokes) {
-            syncRef.current.strokesMap.delete(s.id);
-          }
-        }
         redrawMain();
         persistLocalData();
         scheduleThumbnailUpdate(activeStrokePage.current);
@@ -2127,9 +1982,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
               prev: snap.prev,
               next: stroke.points.map((p) => [...p]),
             });
-            if (syncRef.current) {
-              syncRef.current.strokesMap.set(stroke.id, { ...stroke });
-            }
           }
         } else {
           const img = images.current.find((i) => i.id === snap.id);
@@ -2152,9 +2004,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
               prev: snap.prev,
               next: { x: img.x, y: img.y },
             });
-            if (syncRef.current) {
-              syncRef.current.imagesMap.set(img.id, { ...img });
-            }
           }
         }
       }
@@ -2275,10 +2124,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     function handlePointerMove(e: React.PointerEvent) {
       const rect = getRect();
       const world = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
-
-      if (syncRef.current) {
-        syncRef.current.sendCursor(world.x, world.y);
-      }
 
       if (isPanning.current) {
         cam.current = {
@@ -2450,9 +2295,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
             next: { x: img.x, y: img.y, width: img.width, height: img.height },
           });
           redoStack.current = [];
-          if (syncRef.current) {
-            syncRef.current.imagesMap.set(img.id, { ...img });
-          }
           persistLocalData();
           scheduleThumbnailUpdate(img.page);
         }
@@ -2482,10 +2324,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         strokes.current.push(newStroke);
         undoStack.current.push({ type: "add_stroke", stroke: newStroke });
         redoStack.current = [];
-
-        if (syncRef.current) {
-          syncRef.current.strokesMap.set(newStroke.id, newStroke);
-        }
 
         redrawMain();
         persistLocalData();
@@ -2526,22 +2364,18 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       switch (action.type) {
         case "add_stroke": {
           strokes.current = strokes.current.filter((s) => s.id !== action.stroke.id);
-          if (syncRef.current) syncRef.current.strokesMap.delete(action.stroke.id);
           break;
         }
         case "add_image": {
           images.current = images.current.filter((i) => i.id !== action.image.id);
-          if (syncRef.current) syncRef.current.imagesMap.delete(action.image.id);
           break;
         }
         case "delete": {
           for (const s of action.strokes) {
             strokes.current.push(s);
-            if (syncRef.current) syncRef.current.strokesMap.set(s.id, s);
           }
           for (const img of action.images) {
             images.current.push(img);
-            if (syncRef.current) syncRef.current.imagesMap.set(img.id, img);
           }
           break;
         }
@@ -2551,7 +2385,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
               const s = strokes.current.find((str) => str.id === item.id);
               if (s) {
                 s.points = (item.prev as number[][]).map((p) => [...p]);
-                if (syncRef.current) syncRef.current.strokesMap.set(s.id, { ...s });
               }
             } else {
               const im = images.current.find((img) => img.id === item.id);
@@ -2559,7 +2392,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
                 const prev = item.prev as { x: number; y: number };
                 im.x = prev.x;
                 im.y = prev.y;
-                if (syncRef.current) syncRef.current.imagesMap.set(im.id, { ...im });
               }
             }
           }
@@ -2572,17 +2404,12 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
             im.y = action.prev.y;
             im.width = action.prev.width;
             im.height = action.prev.height;
-            if (syncRef.current) syncRef.current.imagesMap.set(im.id, { ...im });
           }
           break;
         }
         case "clear": {
           strokes.current = [...action.strokes];
           images.current = [...action.images];
-          if (syncRef.current) {
-            for (const s of action.strokes) syncRef.current.strokesMap.set(s.id, s);
-            for (const i of action.images) syncRef.current.imagesMap.delete(i.id);
-          }
           break;
         }
       }
@@ -2604,12 +2431,10 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       switch (action.type) {
         case "add_stroke": {
           strokes.current.push(action.stroke);
-          if (syncRef.current) syncRef.current.strokesMap.set(action.stroke.id, action.stroke);
           break;
         }
         case "add_image": {
           images.current.push(action.image);
-          if (syncRef.current) syncRef.current.imagesMap.set(action.image.id, action.image);
           break;
         }
         case "delete": {
@@ -2617,10 +2442,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           const imageIds = new Set(action.images.map((i) => i.id));
           strokes.current = strokes.current.filter((s) => !strokeIds.has(s.id));
           images.current = images.current.filter((i) => !imageIds.has(i.id));
-          if (syncRef.current) {
-            for (const id of strokeIds) syncRef.current.strokesMap.delete(id);
-            for (const id of imageIds) syncRef.current.imagesMap.delete(id);
-          }
           break;
         }
         case "move": {
@@ -2629,7 +2450,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
               const s = strokes.current.find((str) => str.id === item.id);
               if (s) {
                 s.points = (item.next as number[][]).map((p) => [...p]);
-                if (syncRef.current) syncRef.current.strokesMap.set(s.id, { ...s });
               }
             } else {
               const im = images.current.find((img) => img.id === item.id);
@@ -2637,7 +2457,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
                 const next = item.next as { x: number; y: number };
                 im.x = next.x;
                 im.y = next.y;
-                if (syncRef.current) syncRef.current.imagesMap.set(im.id, { ...im });
               }
             }
           }
@@ -2650,17 +2469,12 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
             im.y = action.next.y;
             im.width = action.next.width;
             im.height = action.next.height;
-            if (syncRef.current) syncRef.current.imagesMap.set(im.id, { ...im });
           }
           break;
         }
         case "clear": {
           strokes.current = [];
           images.current = [];
-          if (syncRef.current) {
-            for (const s of action.strokes) syncRef.current.strokesMap.delete(s.id);
-            for (const i of action.images) syncRef.current.imagesMap.delete(i.id);
-          }
           break;
         }
       }
@@ -2693,11 +2507,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           images: [...images.current],
         });
         redoStack.current = [];
-
-        if (syncRef.current) {
-          for (const s of strokes.current) syncRef.current.strokesMap.delete(s.id);
-          for (const i of images.current) syncRef.current.imagesMap.delete(i.id);
-        }
 
         strokes.current = [];
         images.current = [];
@@ -2774,7 +2583,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         const targetW = Math.round(rect.width * dpr);
         const targetH = Math.round(rect.height * dpr);
 
-        for (const c of [bgRef.current, mainRef.current, drawRef.current, cursorsRef.current]) {
+        for (const c of [bgRef.current, mainRef.current, drawRef.current]) {
           if (!c) continue;
           if (c.width !== targetW || c.height !== targetH) {
             c.width = targetW;
@@ -2908,11 +2717,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           });
           redoStack.current = [];
 
-          if (syncRef.current) {
-            for (const s of delStrokes) syncRef.current.strokesMap.delete(s.id);
-            for (const i of delImages) syncRef.current.imagesMap.delete(i.id);
-          }
-
           strokes.current = strokes.current.filter((s) => !selection.current.has(s.id));
           images.current = images.current.filter((i) => !selection.current.has(i.id));
           selection.current.clear();
@@ -3042,10 +2846,6 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         />
         <canvas
           ref={mainRef}
-          className="absolute inset-0 pointer-events-none"
-        />
-        <canvas
-          ref={cursorsRef}
           className="absolute inset-0 pointer-events-none"
         />
         <canvas

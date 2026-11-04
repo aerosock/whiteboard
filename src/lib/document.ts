@@ -67,7 +67,6 @@ export async function importBoardPackage(
     title: data.board.title || file.name.replace(/\.[^/.]+$/, ""),
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    synced: false,
   };
 
   return {
