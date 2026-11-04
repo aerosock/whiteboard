@@ -253,7 +253,7 @@
 % STRANA 2: ZADÁNÍ (NASKENOVANÝ DOKUMENT)
 % ------------------------------------------------------------------------------
 \noindent
-\includegraphics[width=\textwidth]{obrazky/zadani.png}odlehčeného
+\includegraphics[width=\textwidth]{obrazky/zadani.png}
 
 \clearpage
 
@@ -389,128 +389,13 @@ Výhodou ZUI je eliminace kognitivních bariér při brainstormingu, neboť uži
 \subsubsection{Stránkovaný sešit a standard ISO 216}
 Zatímco ZUI exceluje při volném plánování, při systematickém studiu a~přípravě na výuku naráží na limity při exportu a~tisku. Školní materiály, testy a~pracovní listy se opírají o~mezinárodní standard ISO~216~\cite{iso216}, který definuje formátovou řadu A. Základní formát A0 má plochu přesně $1\text{ m}^2$ a~poměr stran $1 : \sqrt{2}$, což zaručuje, že při přeložení listu na polovinu zůstává poměr stran zachován (tzv. Lichtenbergův poměr). Nejrozšířenější školní formát A4 (rozměry $210 \times 297\text{ mm}$) je pro digitální poznámkový blok ideální jednotkou: poskytuje známé vizuální ohraničení, usnadňuje vkládání a~anotaci předloh v~PDF a~umožňuje přímý tisk bez nežádoucího ořezu.
 
-% ------------------------------------------------------------------------------
-% 2.2 POČÍTAČOVÁ 2D GRAFIKA A PRINCIPY VYKRESLOVÁNÍ
-% ------------------------------------------------------------------------------
-\subsection{Počítačová 2D grafika a principy vykreslování}
-\label{sec:teorie_grafika}
-
-Realizace plynulého digitálního inkoustu vyžaduje pochopení principů reprezentace grafických dat v~operační paměti a~mechanizmů jejich převodu na rastrový displej.
-
-\subsubsection{Vektorová versus rastrová reprezentace tahů}
-V~počítačové grafice rozlišujeme dva základní přístupy k~reprezentaci obrazových dat~\cite{marschner2021cg}:
-\begin{itemize}
-    \item \textbf{Rastrová grafika:} Obraz je reprezentován jako diskrétní dvourozměrná matice barevných pixelů. Její hlavní nevýhodou při digitálním psaní je závislost na rozlišení (\textit{resolution dependency}). Při přiblížení dochází ke ztrátě ostrosti a~vzniku schodovitého zkreslení (\textit{aliasing}). Navíc dodatečná manipulace s~jednotlivými tahy (posun, změna barvy) vyžaduje náročné segmentační operace s~maskami.
-    \item \textbf{Vektorová grafika:} Tah perem je uchován jako posloupnost geometrických bodů v~prostoru, doplněná o~parametry jako přítlak, barva a~tloušťka. Vykreslovací jádro z~těchto bodů v~reálném čase generuje hladkou křivku (např. pomocí Catmull-Rom splinů či polygonální teselace). Vektorová reprezentace zaručuje dokonalou ostrost při libovolném zvětšení, nízké paměťové nároky na uložení jednoho tahu (řádově stovky bajtů) a~umožňuje přesný výběr a~transformaci jednotlivých objektů.
-\end{itemize}
-
-\subsubsection{Volba vykreslovacího modelu: DOM/SVG versus HTML5 Canvas}
-V~moderním webovém a~hybridním desktopovém prostředí existují dva hlavní způsoby vykreslování 2D grafiky:
-\begin{enumerate}
-    \item \textbf{Zadržovaný režim (Retained Mode -- SVG/DOM):} Každý grafický prvek (čára, obdélník, text) existuje jako samostatný uzel v~objektovém modelu dokumentu (DOM). Prohlížeč automaticky spravuje jeho překreslování a~události myši. Tento přístup je však pro digitální poznámkový blok nevhodný: při tisících ručních tahů stylusem dochází k~zahlcení DOM stromu, enormnímu nárůstu paměti a~častým zásekům způsobeným přepočtem stylů a~rozvržení (\textit{layout thrashing}).
-    \item \textbf{Bezprostřední režim (Immediate Mode -- HTML5 Canvas):} Element Canvas poskytuje bitmapový povrch a~programové rozhraní (Canvas 2D API)~\cite{w3c_canvas}, kde vývojář řídí vykreslování přímo voláním kreslicích příkazů v~rámci smyčky \texttt{requestAnimationFrame}. Canvas neuchovává žádné DOM uzly pro jednotlivé tahy; po vykreslení existují pouze jako pixely v~rámcovém bufferu grafické karty. Tento model poskytuje deterministický výkon 60~FPS nezávisle na složitosti scény a~umožňuje okamžité kreslení bez zpoždění.
-\end{enumerate}
-
-\subsubsection{Matematické základy afinních transformací souřadnic}
-Pro implementaci posunu a~zvětšení scény je nezbytné provádět převod mezi dvěma souřadnicovými soustavami:
-\begin{itemize}
-    \item \textbf{Souřadnice obrazovky ($x_{screen}, y_{screen}$):} Udávají pozici kurzoru v~pixelech relativně k~levému hornímu rohu klientského okna aplikace.
-    \item \textbf{Světové souřadnice scény ($x_{world}, y_{world}$):} Udávají absolutní pozici bodu v~virtuálním prostoru plátna, nezávisle na aktuálním posunu či zvětšení.
-\end{itemize}
-
-Převod mezi těmito prostory je afinní transformací, kterou lze v~homogenních souřadnicích popsat maticovým součinem~\cite{marschner2021cg}:
-\begin{equation}
-    \begin{pmatrix} x_{screen} \\ y_{screen} \\ 1 \end{pmatrix} =
-    \begin{pmatrix} s & 0 & c_x \\ 0 & s & c_y \\ 0 & 0 & 1 \end{pmatrix}
-    \begin{pmatrix} x_{world} \\ y_{world} \\ 1 \end{pmatrix}
-    \label{eq:world_to_screen}
-\end{equation}
-kde $s$ představuje měřítko zvětšení (\textit{zoom factor}) a~$c_x, c_y$ souřadnice posunu kamery. Pro inverzní převod (při kliknutí myší na obrazovku na pozici $[x_{screen}, y_{screen}]$) se využívá vztah:
-\begin{equation}
-    x_{world} = \frac{x_{screen} - c_x}{s}, \quad y_{world} = \frac{y_{screen} - c_y}{s}
-    \label{eq:screen_to_world}
-\end{equation}
-
-Tento jednoduchý přepočet je základem veškeré interakce: zajišťuje, že tah perem začíná a~končí přesně tam, kam uživatel ukázal stylusem, i~když je plátno posunuté či přiblížené.
-
-\subsubsection{Fyzika zobrazení na displejích s vysokým rozlišením (HiDPI a DPR)}
-Běžnou chybou při práci s~HTML5 Canvasem je neostré zobrazení na moderních displejích (Retina, 4K monitory). Prohlížeče používají logické CSS pixely, které se na obrazovkách s~vysokou hustotou bodů skládají z~více fyzických subpixelů. Tento poměr vyjadřuje hodnota \textit{Device Pixel Ratio} (DPR):
-\begin{equation}
-    \text{DPR} = \frac{\text{fyzické pixely obrazovky}}{\text{logické CSS pixely}}
-\end{equation}
-
-Pokud má canvas logickou velikost $800 \times 600\text{ px}$ a~displej má $\text{DPR} = 2$, prohlížeč vykreslí interní buffer o~rozměru $800 \times 600$ a~následně jej hardwarově roztáhne na $1600 \times 1200$ fyzických pixelů, což vede k~rozmazání křivek. Řešením je nastavit interní rozměry canvasu (\texttt{width}, \texttt{height}) na hodnoty vynásobené DPR a~styl zobrazení (\texttt{style.width}, \texttt{style.height}) ponechat v~logických pixelech s~následnou aplikací měřítka \texttt{ctx.scale(DPR, DPR)}. Tím je zaručena naprostá ostrost každého tahu.
-
-% ------------------------------------------------------------------------------
-% 2.3 ARCHITEKTURA LOCAL-FIRST A PERZISTENCE DAT
-% ------------------------------------------------------------------------------
-\subsection{Architektura Local-First a perzistence dat}
-\label{sec:teorie_local_first}
-
-V~roce 2019 formuloval Kleppmann a~kolektiv sedm základních ideálů pro návrh softwaru s~architekturou \textit{Local-First}~\cite{kleppmann2019localfirst}. Hlavní myšlenkou je přesun těžiště správy dat ze vzdáleného cloudu přímo do zařízení uživatele. Aplikace pracuje primárně s~lokální kopií dat uloženou v~perzistentní paměti zařízení (např. LocalStorage či IndexedDB v~prohlížeči).
-
-Tento přístup přináší zásadní výhody:
-\begin{itemize}
-    \item \textbf{Nulová latence při zápisu:} Ukládání tahů a~úprav probíhá asynchronně v~paměti zařízení bez čekání na potvrzení síťového serveru.
-    \item \textbf{Plná autonomie offline:} Student může sešit otevřít, upravovat a~vytvářet nové stránky v~místech bez internetového připojení (učebny bez Wi-Fi, vlak).
-    \item \textbf{Vlastnictví a soukromí dat:} Zápisky a~studijní materiály nejsou vystaveny riziku úniku z~cizích cloudových serverů a~uživatel má k~dispozici přímý export souborů.
-\end{itemize}
-
-% ------------------------------------------------------------------------------
-% 2.4 HODNOCENÍ POUŽITÝCH TECHNOLOGIÍ
-% ------------------------------------------------------------------------------
-\subsection{Hodnocení použitých technologií}
-\label{sec:teorie_tech}
-
-\subsubsection{Tauri v2 a programovací jazyk Rust}
-Pro desktopovou verzi byl vybrán framework Tauri~v2~\cite{tauri_docs}. Na rozdíl od Electronu, který integruje celou platformu Chromium, Tauri využívá nativní webové zobrazení poskytované operačním systémem (WebKitGTK na Linuxu, WebView2 na Windows). Aplikační logika na pozadí je psána v~jazyce Rust, který zaručuje paměťovou bezpečnost (\textit{memory safety}) bez režie garbage collectoru. Výsledkem je instalační balíček o~velikosti kolem 10~MB a~spotřeba paměti nepřesahující 50~MB RAM.
-
-\subsubsection{Frontendový ekosystém: React, TypeScript a Vite}
-Klientské rozhraní využívá deklarativní knihovnu React s~nástrojem Vite pro rychlé sestavování. Silný typový systém TypeScriptu eliminuje chyby při práci se souřadnicovými strukturami a~geometrií tahů ještě ve fázi kompilace.
-
-
 % ==============================================================================
 % 3 PRAKTICKÁ ČÁST
 % ==============================================================================
 \section{Praktická část}
 \label{sec:prakticka_cast}
 
-V~této kapitole je popsán konkrétní postup návrhu a~implementace aplikace Whiteboard, struktura zdrojových kódů, řešení klíčových algoritmů a~provedené testování.
-
-% ------------------------------------------------------------------------------
-% 3.1 ARCHITEKTONICKÝ NÁVRH A STRUKTURA PROJEKTU
-% ------------------------------------------------------------------------------
-\subsection{Architektonický návrh a struktura projektu}
-\label{sec:prakticka_architektura}
-\textit{(Tato podkapitola bude detailně popisovat rozdělení aplikace na prezentační vrstvu v~Reactu, vykreslovací komponentu plátna a~nativní desktopovou integraci v~Tauri.)}
-
-% ------------------------------------------------------------------------------
-% 3.2 IMPLEMENTACE VYKRESLOVACÍHO JÁDRA PLÁTNA
-% ------------------------------------------------------------------------------
-\subsection{Implementace vykreslovacího jádra plátna}
-\label{sec:prakticka_platno}
-\textit{(Tato podkapitola bude dokumentovat třívrstvý model Canvasu, algoritmus snímání vstupních událostí ukazatele PointerEvents a~vyhlazování tahů proměnlivé tloušťky.)}
-
-% ------------------------------------------------------------------------------
-% 3.3 SPRÁVA VÍCESTRÁNKOVÉHO SEŠITU A ANOTACE PDF
-% ------------------------------------------------------------------------------
-\subsection{Správa vícestránkového sešitu a anotace PDF}
-\label{sec:prakticka_dokumenty}
-\textit{(Tato podkapitola popíše strukturu stránkovaného A4 režimu, práci s~rastrovou podkladovou vrstvou a~využití knihovny PDF.js pro import studijních textů.)}
-
-% ------------------------------------------------------------------------------
-% 3.4 INTEGRACE VIZUÁLNÍHO AI ASISTENTA
-% ------------------------------------------------------------------------------
-\subsection{Integrace vizuálního AI asistenta pro výuku}
-\label{sec:prakticka_ai}
-\textit{(Tato podkapitola se bude věnovat implementaci výběrového nástroje, exportu ořezu do Base64 formátu a~napojení na Vision-Language API s~pedagogickým systémovým promptem.)}
-
-% ------------------------------------------------------------------------------
-% 3.5 TESTOVÁNÍ A OPTIMALIZACE VÝKONU
-% ------------------------------------------------------------------------------
-\subsection{Testování a optimalizace výkonu}
-\label{sec:prakticka_testovani}
-\textit{(Tato podkapitola bude obsahovat výsledky měření plynulosti vykreslování, spotřeby paměti v~porovnání s~jinými nástroji a~ověření funkčnosti na Linuxu a~Windows.)}
+\textit{(Tato kapitola bude vypracována v~průběhu realizace projektu.)}
 
 
 % ==============================================================================
@@ -519,33 +404,12 @@ V~této kapitole je popsán konkrétní postup návrhu a~implementace aplikace W
 \section{Závěr}
 \label{sec:zaver}
 
-\textit{(Závěr maturitní práce shrne výsledky dosažené po dokončení implementace, zhodnotí naplnění stanovených cílů a~navrhne možnosti dalšího budoucího rozvoje.)}
+\textit{(Bude doplněno po dokončení implementace a~vyhodnocení cílů.)}
 
-
-% ==============================================================================
-% 5 SEZNAM OBRÁZKŮ
-% ==============================================================================
-\section{Seznam obrázků}
-\label{sec:seznam_obrazku}
-
-\makeatletter
-\@starttoc{lof}
-\makeatother
 
 
 % ==============================================================================
-% 6 SEZNAM TABULEK
-% ==============================================================================
-\section{Seznam tabulek}
-\label{sec:seznam_tabulek}
-
-\makeatletter
-\@starttoc{lot}
-\makeatother
-
-
-% ==============================================================================
-% 7 SEZNAM VYUŽITÝCH ZDROJŮ (ČSN ISO 690)
+% 5 SEZNAM VYUŽITÝCH ZDROJŮ (ČSN ISO 690)
 % ==============================================================================
 \section{Seznam využitých zdrojů}
 \label{sec:zdroje}
@@ -555,56 +419,23 @@ V~této kapitole je popsán konkrétní postup návrhu a~implementace aplikace W
 \renewcommand{\section}[2]{}%
 \begin{thebibliography}{99}
 
-    \bibitem{marschner2021cg}
-    MARSCHNER, Steve a~Peter SHIRLEY. \textit{Fundamentals of Computer Graphics}. 5. vyd. Boca Raton: CRC Press, 2021. 760~s. ISBN 978-0-367-50503-5.
-
     \bibitem{bederson1994pad}
     BEDERSON, Benjamin B. a~James D. HOLLAN. Pad++: A~Zooming Graphical Interface for Exploring Alternate Interface Physics. In: \textit{Proceedings of the 7th Annual ACM Symposium on User Interface Software and Technology (UIST '94)} [online]. New York: ACM, 1994, s.~17--26 [cit. 2026-11-04]. ISBN 0-89791-657-3. Dostupné z: \url{https://doi.org/10.1145/192426.192435}
 
-    \bibitem{kleppmann2019localfirst}
-    KLEPPMANN, Martin, Adam WIGGINS, Peter VAN HARDENBERG a~Mark MCGRANAGHAN. Local-first software: you own your data, in spite of the cloud. In: \textit{Proceedings of the 2019 ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward! 2019)} [online]. New York: ACM, 2019, s.~154--178 [cit. 2026-11-04]. Dostupné z: \url{https://doi.org/10.1145/3359591.3359737}
-
-    \bibitem{w3c_canvas}
-    W3C. \textit{HTML Canvas 2D Context: W3C Recommendation} [online]. World Wide Web Consortium, 2021 [cit. 2026-11-04]. Dostupné z: \url{https://www.w3.org/TR/2dcontext/}
-
     \bibitem{iso216}
     INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. \textit{ISO 216:2007 Writing paper and certain classes of printed matter -- Trimmed sizes} [online]. Ženeva: ISO, 2007 [cit. 2026-11-04]. Dostupné z: \url{https://www.iso.org/standard/36631.html}
-
-    \bibitem{tauri_docs}
-    TAURI PROGRAMME. \textit{Tauri 2.0 Documentation} [online]. Oficiální technická dokumentace, 2024 [cit. 2026-11-04]. Dostupné z: \url{https://v2.tauri.app/}
-
-    \bibitem{ruiz_freehand}
-    RUIZ, Steve. \textit{perfect-freehand: Draw perfect pressure-sensitive freehand lines} [online]. GitHub, 2024 [cit. 2026-11-04]. Dostupné z: \url{https://github.com/steveruizok/perfect-freehand}
 
 \end{thebibliography}
 \endgroup
 
 
 % ==============================================================================
-% 8 PŘÍLOHY
+% 6 PŘÍLOHY
 % ==============================================================================
 \clearpage
 \section*{Přílohy}
 \addcontentsline{toc}{section}{Přílohy}
 
-\subsection*{Příloha A – Uživatelská příručka a instalace}
-\addcontentsline{toc}{subsection}{Příloha A – Uživatelská příručka a instalace}
-Aplikace nevyžaduje složitou instalaci. Pro spuštění na desktopu postačí stáhnout instalační balíček pro daný operační systém:
-\begin{itemize}
-    \item \textbf{Linux:} Balíček \texttt{.AppImage} nebo \texttt{.deb}. Spuštění vyžaduje přidělení spustitelného práva (\texttt{chmod +x}).
-    \item \textbf{Windows:} Instalační průvodce \texttt{.msi} nebo přenosný archiv \texttt{.zip}.
-    \item \textbf{Webová verze:} Dostupná přímo ve webovém prohlížeči podporujícím moderní HTML5 Canvas a WebSockets.
-\end{itemize}
-
-\vspace{12pt}
-\subsection*{Příloha B – Obsah přiloženého elektronického média}
-\addcontentsline{toc}{subsection}{Příloha B – Obsah přiloženého elektronického média}
-Přiložené paměťové médium (USB disk) obsahuje:
-\begin{itemize}
-    \item \texttt{/text/} – Text maturitní práce ve formátu PDF a zdrojové kódy LaTeXu.
-    \item \texttt{/src/} – Kompletní zdrojové kódy aplikace (frontend, Tauri backend a synchronizační server).
-    \item \texttt{/bin/} – Zkompilované binární spustitelné soubory pro Linux a Windows.
-    \item \texttt{/doc/} – Elektronická dokumentace a diagramy.
-\end{itemize}
+\textit{(Přílohy budou doplněny k~odevzdání práce.)}
 
 \end{document}
