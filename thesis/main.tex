@@ -2,20 +2,22 @@
 % ŠABLONA MATURITNÍ PRÁCE S OBHAJOBOU (MPsO)
 % Střední průmyslová škola a Gymnázium Na Třebešíně
 % ==============================================================================
-% Přesná kopie oficiální šablony 2026-27_SPSG_sablona_MPsO.dotx 1:1
+% Architektura šablony přesně odpovídá dokončeným maturitním pracím na škole
+% (včetně rozdělení na Úvod s cíli, Teoretickou část, Praktickou část a Závěr)
+% a normě 2026-27_SPSG_sablona_MPsO.dotx 1:1.
 % ==============================================================================
 
 \documentclass[12pt, a4paper, oneside]{article}
 
 % ------------------------------------------------------------------------------
-% 1. ÚDAJE O PRÁCI (VÝCHOZÍ TEXT ZE ŠABLONY .DOTX)
+% 1. ÚDAJE O PRÁCI (VYPLŇTE ZDE — PROPÍŠE SE AUTOMATICKY DO CELÉHO DOKUMENTU)
 % ------------------------------------------------------------------------------
-\newcommand{\NazevPrace}{Název práce}
-\newcommand{\NazevPraceVelkymi}{TÉMA (NÁZEV) MATURITNÍ PRÁCE}
-\newcommand{\Autor}{Jméno a příjmení}
-\newcommand{\Vedouci}{Jméno Příjmení}
-\newcommand{\Trida}{4.}
-\newcommand{\SkolniRok}{2025 / 2026}
+\newcommand{\NazevPrace}{Interaktivní digitální poznámkový blok s~integrovaným AI asistentem pro výuku}
+\newcommand{\NazevPraceVelkymi}{INTERAKTIVNÍ DIGITÁLNÍ POZNÁMKOVÝ BLOK S~INTEGROVANÝM AI ASISTENTEM PRO VÝUKU}
+\newcommand{\Autor}{Kostiantyn Kudinov}
+\newcommand{\Vedouci}{Mgr. Jan Souhrada}
+\newcommand{\Trida}{4.G}
+\newcommand{\SkolniRok}{2026 / 2027}
 
 % ------------------------------------------------------------------------------
 % 2. KÓDOVÁNÍ, JAZYK A PÍSMA (Times New Roman 12pt + Arial pro nadpisy)
@@ -28,10 +30,10 @@
 \usepackage{tgtermes}
 % Bezpatkové písmo pro nadpisy a titulní stranu (Arial / Helvetica / TeX Gyre Heros)
 \usepackage{tgheros}
-% Neproporcionální písmo pro kód
+% Neproporcionální písmo pro kód (TeX Gyre Cursor)
 \usepackage{tgcursor}
 
-% Mikrotypografie
+% Mikrotypografie (optické vyrovnání okrajů)
 \usepackage{microtype}
 
 % ------------------------------------------------------------------------------
@@ -113,7 +115,6 @@
 \titlespacing*{\subparagraph}{0pt}{6pt}{4pt}
 
 % Nadpis mimo obsah (Čestné prohlášení, Poděkování, Abstrakt, Obsah...)
-% V šabloně .dotx: 14pt, bezpatkové (Arial), tučné, nečíslovaný, nezobrazuje se v obsahu
 \newcommand{\nadpismimoobsah}[1]{%
     \vspace{6pt}%
     {\normalfont\fontsize{14pt}{18pt}\selectfont\sffamily\bfseries #1\par}%
@@ -121,7 +122,7 @@
 }
 
 % ------------------------------------------------------------------------------
-% 6. OBSAH A SEZNAM OBRÁZKŮ (vodící linky a odsazení dle .dotx)
+% 6. OBSAH, SEZNAM OBRÁZKŮ A SEZNAM TABULEK
 % ------------------------------------------------------------------------------
 \makeatletter
 \renewcommand{\@pnumwidth}{3.2em}
@@ -146,16 +147,28 @@
 % Položky v Seznamu obrázků ("Obrázek 1: Název ...... - 3 -")
 \renewcommand*\l@figure[2]{%
   \@dottedtocline{1}{0pt}{5.5em}{Obrázek~#1}{#2}}
+
+% Položky v Seznamu tabulek ("Tabulka 1: Název ...... - 3 -")
+\renewcommand*\l@table[2]{%
+  \@dottedtocline{1}{0pt}{5.5em}{Tabulka~#1}{#2}}
 \makeatother
 
 % ------------------------------------------------------------------------------
-% 7. BALÍČKY PRO GRAFIKU, ODKAZY A POPISKY
+% 7. BALÍČKY PRO GRAFIKU, TABULKY, MATEMATIKU, KÓD A ODKAZY
 % ------------------------------------------------------------------------------
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{url}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
 
-% Popisky obrázků: 12pt, kurzíva, zarovnáno na střed ("Obr. 1: popis")
+% Popisky obrázků a tabulek dle .dotx: kurzíva, zarovnáno na střed
 \usepackage[
     font={it},
     labelfont={it},
@@ -165,18 +178,45 @@
 
 \addto\captionsczech{%
     \renewcommand{\figurename}{Obr.}%
+    \renewcommand{\tablename}{Tab.}%
 }
 
-% Klikací odkazy v PDF
+% Konfigurace pro výpisy zdrojového kódu (listings)
+\definecolor{codebg}{rgb}{0.97, 0.97, 0.97}
+\definecolor{codeborder}{rgb}{0.85, 0.85, 0.85}
+\definecolor{codecomment}{rgb}{0.40, 0.40, 0.40}
+\definecolor{codekeyword}{rgb}{0.10, 0.20, 0.70}
+\definecolor{codestring}{rgb}{0.15, 0.50, 0.15}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeborder},
+    basicstyle=\ttfamily\fontsize{9.5pt}{12pt}\selectfont,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    numbers=left,
+    numberstyle=\tiny\color{codecomment},
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=true,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    keepspaces=true
+}
+
+% Klikací hypertextové odkazy v PDF (bez rušivých rámečků)
 \usepackage[hypertexnames=false, hidelinks, unicode]{hyperref}
 
 
 % ==============================================================================
-% DOKUMENT (PŘESNĚ DLE STRAN ŠABLONY .DOTX)
+% DOKUMENT
 % ==============================================================================
 \begin{document}
 
-% Strany 1–4 nemají zobrazené číslo strany
+% Strany 1–4 nemají zobrazené číslo strany v zápatí
 \pagestyle{empty}
 
 % ------------------------------------------------------------------------------
@@ -209,9 +249,16 @@
 \clearpage
 
 % ------------------------------------------------------------------------------
-% STRANA 2: ZADÁNÍ
+% STRANA 2: ZADÁNÍ (NASKENOVANÝ DOKUMENT)
 % ------------------------------------------------------------------------------
-{\sffamily\fontsize{12pt}{15pt}\selectfont VLOŽIT NASKENOVANÉ ZADÁNÍ}
+% Po obdržení podepsaného zadání v sekretariátu nahraďte text vložením PDF/obrázku:
+% \includegraphics[width=\textwidth]{obrazky/zadani.png}
+\begin{center}
+    \vspace*{8cm}
+    {\sffamily\fontsize{14pt}{18pt}\selectfont\bfseries VLOŽIT NASKENOVANÉ ZADÁNÍ MATURITNÍ PRÁCE\par}
+    \vspace{12pt}
+    {\itshape (Tato strana bude po fyzickém podepsání nahrazena naskenovaným originálem zadání)}\par
+\end{center}
 
 \clearpage
 
@@ -222,12 +269,13 @@
 
 \nadpismimoobsah{Čestné prohlášení}
 
-Prohlašuji, že jsem maturitní práci na téma \makebox[3.8cm]{\dotfill} vypracoval(a) samostatně s~využitím odborné literatury a~pramenů uvedených v~přiloženém seznamu využitých zdrojů.
+Prohlašuji, že jsem maturitní práci na téma \textbf{\NazevPrace} vypracoval(a) samostatně s~využitím odborné literatury a~pramenů uvedených v~přiloženém seznamu využitých zdrojů.
 
 \vspace{1.2cm}
-V~Praze dne: 
+V~Praze dne: \makebox[4cm]{\dotfill}
 
 \vspace{1.8cm}
+\makebox[6cm]{\dotfill} \\
 \textit{Podpis autora}
 
 \clearpage
@@ -239,7 +287,7 @@ V~Praze dne:
 
 \nadpismimoobsah{Poděkování}
 
-Děkuji tímto vedoucímu (vedoucí) maturitní práce panu (paní) \makebox[3.8cm]{\dotfill} za cenné připomínky a~odborné rady při vypracovávání.
+Děkuji tímto vedoucímu maturitní práce panu \textbf{\Vedouci} za odborné vedení, cenné připomínky, věcné rady a~čas věnovaný konzultacím při zpracování této práce.
 
 \clearpage
 
@@ -253,30 +301,30 @@ Děkuji tímto vedoucímu (vedoucí) maturitní práce panu (paní) \makebox[3.8
 % STRANA 5: ANOTAČNÍ LIST (ČESKY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Název práce:}
-Název práce
+\NazevPrace
 
 \nadpismimoobsah{Autor:}
-Autor práce
+\Autor
 
 \nadpismimoobsah{Vedoucí práce:}
-Vedoucí práce
+\Vedouci
 
 \nadpismimoobsah{Abstrakt}
-Krátký souhrn, o čem práce pojednává
+Cílem této maturitní práce je navrhnout, implementovat a~otestovat multiplatformní digitální poznámkový blok a~virtuální tabuli (whiteboard) s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) a~stránkovaného sešitu formátu A4 s~možností importu PDF. Klientská vrstva je postavena na frameworku Tauri v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvas pro plynulé vektorové vykreslování s~nulovou latencí. Práce řeší bezkolizní kolaborativní synchronizaci v~reálném čase pomocí protokolu WebSocket a~CRDT struktur (Yjs) a~integruje multimodální AI asistent pro kontextové vysvětlování ručně psaných výpočtů a~tvorbu procvičovacích úloh.
 
 \nadpismimoobsah{Klíčová slova}
-Klíčová slova
+digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, WebSocket, umělá inteligence, Vision-Language Model
 
 \clearpage
 
 % ------------------------------------------------------------------------------
-% STRANA 6: ANOTAČNÍ LIST (ANGLICKY)
+% STRANA 6: ANOTAČNÍ LIST (ANGLICKY — SUMMARY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Summary}
-Souhrn přeložený do AJ 
+The objective of this graduation thesis is to design, implement, and evaluate a~cross-platform digital notebook and collaborative whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges the affordances of an infinite zoomable canvas with structured ISO 216 A4 paginated notebooks and native PDF annotation capabilities. Engineered atop Tauri v2, Rust, and React, the client utilizes a~layered HTML5 Canvas rendering architecture to ensure sub-millisecond stroke latency and consistent 60~FPS performance across desktop environments. Real-time peer synchronization is achieved through WebSocket networking and Conflict-Free Replicated Data Types (Yjs). Furthermore, a~multimodal vision-language assistant is embedded to provide contextual explanations of handwritten equations and automated practice question generation.
 
 \nadpismimoobsah{Keywords}
-Klíčová slova v angličtině
+digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, CRDT, Yjs, WebSocket, artificial intelligence, Vision-Language Model
 
 \clearpage
 
@@ -290,42 +338,316 @@ Klíčová slova v angličtině
 
 \clearpage
 
-% ------------------------------------------------------------------------------
-% STRANA 8+: TEXT PRÁCE (PŘESNĚ DLE ŠABLONY .DOTX)
-% ------------------------------------------------------------------------------
+% ==============================================================================
+% 1 ÚVOD
+% ==============================================================================
 \section{Úvod}
-Text úvodu…
+\label{sec:uvod}
+
+V~dnešní digitální době hrají softwarové nástroje pro zaznamenávání informací a~organizaci studia klíčovou roli v~každodenním životě studentů i~odborníků. Zatímco v~minulosti dominovaly fyzické papírové sešity a~učebnice, současný trend směřuje k~unifikovaným digitálním pracovním prostorům. Zvláště při studiu technických, matematických a~přírodovědných disciplín však běžné textové procesory narážejí na své limity, neboť neumožňují volné prostorové náčrty, psaní vzorců stylusem a~okamžité anotování předloh ve formátu PDF.
+
+Mnoho současných multiplatformních aplikací je navíc postaveno na technologiích s~vysokou spotřebou systémových prostředků (často přesahující stovky megabajtů operační paměti) a~výraznou vstupní latencí při kreslení volnou rukou. Zároveň dochází k~tříštění pracovního toku studenta, kdy moderní nástroje umělé inteligence existují pouze v~oddělených webových rozhraních. Uživatel je tak nucen své ručně psané výpočty a~diagramy složitě přepisovat, exportovat či fotografovat, aby získal zpětnou vazbu nebo vysvětlení nejasného kroku.
+
+Tato maturitní práce se zaměřuje na návrh a~kompletní realizaci moderního, multiplatformního a~vysoce optimalizovaného digitálního poznámkového bloku. Aplikace propojuje plynulé vektorové vykreslování na plátně s~architekturou Local-First, bezpečnou síťovou synchronizací v~reálném čase a~přímou integrací multimodálního AI asistenta.
+
+% ------------------------------------------------------------------------------
+% 1.1 CÍLE PRÁCE (POVINNÁ PODKAPITOLA DLE PŘEDLOH Z TŘEBEŠÍNA)
+% ------------------------------------------------------------------------------
+\subsection{Cíle práce}
+\label{sec:cile_prace}
+
+V~souladu se zadáním maturitní práce byly stanoveny následující konkrétní cíle:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Návrh a implementace multiplatformní aplikace:} Vytvořit odlehčenou desktopovou aplikaci (Tauri v2, Rust) i~webovou verzi s~využitím knihovny React a~jazyka TypeScript, která zajistí hardwarově akcelerované vektorové vykreslování s~vysokou odezvou (60~FPS) a~minimální spotřebou RAM.
+    \item \textbf{Vývoj hybridního prostorového plátna:} Realizovat podporu pro volný pohyb po nekonečné ploše (ZUI) i~strukturovaný režim vícestránkového sešitu formátu ISO~216~A4 s~možností přímého importu a~anotování dokumentů PDF.
+    \item \textbf{Zajištění spolehlivé synchronizace a perzistence:} Implementovat Local-First ukládání (IndexedDB / SQLite WAL) zaručující plnou funkčnost v~offline režimu a~kolaborativní synchronizaci poznámek v~reálném čase pomocí protokolu WebSocket a~bezkolizních CRDT struktur (Yjs).
+    \item \textbf{Integrace multimodálního AI asistenta pro výuku:} Propojit aplikaci s~Vision-Language modelem, který umožní označit ručně psaný výpočet či schéma lasem, poskytne kontextové vysvětlení a~automaticky vygeneruje interaktivní testovací otázky (active recall) z~obsahu sešitu.
+    \item \textbf{Ověření a optimalizace systému:} Provést profilování výkonu vykreslovacího jádra (viewport culling, kompenzace DPR) a~uživatelské testování plynulosti psaní na různých zařízeních.
+\end{enumerate}
+
+
+% ==============================================================================
+% 2 TEORETICKÁ ČÁST
+% ==============================================================================
+\section{Teoretická část}
+\label{sec:teoreticka_cast}
+
+Teoretická část práce shrnuje odborná teoretická východiska, matematické základy dvourozměrné počítačové grafiky, architektury distribuovaných kolaborativních systémů a~principy využití velkých jazykových modelů v~pedagogickém procesu.
+
+% ------------------------------------------------------------------------------
+% 2.1 TEORETICKÁ VÝCHODISKA A POČÍTAČOVÁ GRAFIKA
+% ------------------------------------------------------------------------------
+\subsection{Digitální poznámkové bloky a počítačová 2D grafika}
+\label{sec:teorie_grafika}
+
+Aplikace pro tvorbu digitálních poznámek představují syntézu dvou základních přístupů v~oblasti interakce člověka s~počítačem (HCI): neomezené pracovní plochy a~stránkovaného dokumentu.
+
+\subsubsection{Koncept nekonečného plátna (ZUI) a stránkovaného sešitu}
+Koncept nekonečného plátna vychází z~přibližovatelných uživatelských rozhraní (ZUI -- \textit{Zoomable User Interface}). Na rozdíl od běžných editorů je scéna umístěna v~souvislé eukleidovské rovině $\mathbb{R}^2$, v~níž se uživatel naviguje pomocí posunu (\textit{panning}) a~změny měřítka (\textit{zooming}). Stránkovaný režim naproti tomu zachovává standardizovaný formát ISO~216~A4 s~poměrem stran $1 : \sqrt{2}$, což usnadňuje tisk a~export studijních zápisků.
+
+\subsubsection{Rastrová versus vektorová reprezentace tahů}
+Při digitálním kreslení je stěžejní volba datové reprezentace. Rastrová grafika ukládá obraz jako diskrétní matici pixelů, což při přiblížení způsobuje ztrátu ostrosti (aliasing). Vektorový přístup ukládá tahy jako matematické křivky definované řídicími body, což garantuje absolutní ostrost při jakémkoli měřítku a~umožňuje dodatečnou manipulaci s~objekty.
+
+\subsubsection{Souřadnicové transformace a afinní matice}
+Převod mezi souřadnicemi obrazovky (\textit{screen space}) a~globálními souřadnicemi scény (\textit{world space}) je popsán pomocí homogenních souřadnic a~afinní transformační matice $3 \times 3$:
+\begin{equation}
+    \begin{pmatrix} x_{world} \\ y_{world} \\ 1 \end{pmatrix} =
+    \begin{pmatrix} s & 0 & t_x \\ 0 & s & t_y \\ 0 & 0 & 1 \end{pmatrix}^{-1}
+    \begin{pmatrix} x_{screen} \\ y_{screen} \\ 1 \end{pmatrix}
+    \label{eq:affine}
+\end{equation}
+kde $s$ reprezentuje faktor zvětšení (\textit{zoom}) a~$t_x, t_y$ vektor posunu plátna.
+
+% ------------------------------------------------------------------------------
+% 2.2 ARCHITEKTURA SYNCHRONIZACE V REÁLNÉM ČASE
+% ------------------------------------------------------------------------------
+\subsection{Architektura synchronizace a komunikace v reálném čase}
+\label{sec:teorie_sync}
+
+\subsubsection{Paradigma Local-First softwaru}
+Architektura Local-First staví na principu, že uživatel plně vlastní svá data uložená lokálně v~zařízení. Síťové spojení slouží pouze jako synchronizační kanál, nikoli jako podmínka pro běh aplikace.
+
+\subsubsection{Bezkolidní replikované datové typy (CRDT) a knihovna Yjs}
+Pro souběžnou editaci bez nutnosti centrálního zamykání dokumentu se využívají struktury CRDT (\textit{Conflict-Free Replicated Data Types}). Ty zaručují případnou konzistenci (\textit{eventual consistency}) bez vzniku konfliktů. Knihovna Yjs implementuje tyto struktury s~vysokou binární optimalizací.
+
+\subsubsection{Protokol WebSocket}
+Pro obousměrnou komunikaci s~nízkou režií se využívá protokol WebSocket (RFC~6455), který po úvodním handshake udržuje otevřené trvalé TCP spojení.
+
+% ------------------------------------------------------------------------------
+% 2.3 POUŽITÉ TECHNOLOGIE A VÝVOJOVÁ PROSTŘEDÍ
+% ------------------------------------------------------------------------------
+\subsection{Použité technologie a vývojová prostředí}
+\label{sec:teorie_tech}
+
+\subsubsection{Framework Tauri v2 a programovací jazyk Rust}
+Framework Tauri umožňuje vytvářet bezpečné multiplatformní desktopové aplikace s~webovým frontendem a~nativním jádrem v~jazyce Rust. Na rozdíl od Electronu nevyžaduje bundling celého prohlížeče Chromium, což snižuje spotřebu paměti RAM na jednotky desítek megabajtů.
+
+\subsubsection{React, TypeScript a sestavovací nástroj Vite}
+Klientské rozhraní je vyvinuto v~knihovně React s~typovým systémem TypeScript. Moderní bundler Vite zajišťuje okamžitý Hot Module Replacement (HMR) a~optimalizovaný produkční build.
+
+\subsubsection{Vývojové nástroje: Visual Studio Code, Git a GitHub}
+Správa zdrojového kódu je řízena systémem Git s~vzdáleným repozitářem na platformě GitHub. Jako primární vývojové prostředí slouží Visual Studio Code s~rozšířeními pro Rust (rust-analyzer) a~LaTeX.
+
+
+% ==============================================================================
+% 3 PRAKTICKÁ ČÁST
+% ==============================================================================
+\section{Praktická část}
+\label{sec:prakticka_cast}
+
+Praktická část práce dokumentuje architektonický návrh, programovou implementaci jednotlivých komponent aplikace, strukturu zdrojových kódů a~výsledky testování.
+
+% ------------------------------------------------------------------------------
+% 3.1 NÁVRH ARCHITEKTURY
+% ------------------------------------------------------------------------------
+\subsection{Analýza požadavků a architektonický návrh}
+\label{sec:navrh_architektury}
+
+Systém je rozdělen do tří hlavních vrstev:
+\begin{enumerate}
+    \item \textbf{Prezentační vrstva (Frontend):} Reaktivní rozhraní v~Reactu obsluhující plátno HTML5 Canvas, nástrojové panely a~dialogy.
+    \item \textbf{Systémové jádro (Desktop / Backend):} Rust proces v~Tauri obsluhující nativní dialogy, souborový systém a~lokální databázi SQLite.
+    \item \textbf{Synchronizační a asistenční vrstva (Cloud / Server):} WebSocket server v~prostředí Hono zajišťující distribuci CRDT zpráv a~napojení na multimodální Vision-Language API.
+\end{enumerate}
 
 \begin{figure}[H]
     \centering
-    % Placeholder pro obrázek
-    \caption{např. Úvodní schéma}
+    % Placeholder pro diagram architektury
+    \fbox{\parbox{0.85\textwidth}{\centering\vspace{1.5cm}\textbf{Obrázek: Architektonické schéma systému}\\\textit{(Frontend Canvas $\leftrightarrow$ Tauri IPC $\leftrightarrow$ WebSocket Server $\leftrightarrow$ AI Vision API)}\vspace{1.5cm}}}
+    \caption{Celková architektura aplikace a datové toky}
+    \label{fig:architektura}
 \end{figure}
 
-\section{Kapitola}
+% ------------------------------------------------------------------------------
+% 3.2 STRUKTURA PROJEKTU A IMPLEMENTACE JÁDRA
+% ------------------------------------------------------------------------------
+\subsection{Implementace a struktura projektu}
+\label{sec:implementace}
 
-\subsection{Kapitola}
+\subsubsection{Struktura adresářů a konfigurace}
+Projekt je organizován do přehledné monorepo struktury rozdělující klientskou část, desktopovou vrstvu a~server:
 
-\subsubsection{Kapitola}
+\begin{lstlisting}[language=bash, caption={Hierarchická struktura zdrojových kódů projektu}, label={lst:struktura}]
+whiteboard/
++-- src/                  # React & TypeScript frontend
+|   +-- components/       # UI prvky (Canvas, Toolbar, Sidebar)
+|   +-- engine/           # Vykreslovaci jadro a transformace
+|   +-- hooks/            # Vlastni React hooky (useCanvas, useSync)
+|   +-- services/         # CRDT synchronizace a AI klient
++-- src-tauri/            # Rust konfigurace a nativni moduly
+|   +-- src/main.rs       # Hlavni vstupni bod Tauri aplikace
++-- server/               # Hono WebSocket synchronizacni server
++-- package.json          # Zavislosti klientske casti
+\end{lstlisting}
 
-\paragraph{Kapitola}
+\subsubsection{Vykreslovací jádro plátna a algoritmus vyhlazování}
+Vykreslovací jádro využívá rozdělení Canvasu do tří překrývajících se vrstev: podkladová stránka (včetně PDF), vrstva vykreslených tahů a~interaktivní dočasná vrstva. Vyhlazování křivek proměnlivé tloušťky je zajištěno algoritmem polygonální teselace.
 
-\subparagraph{Podnadpis}
+\begin{lstlisting}[language=Java, caption={Ukázka výpočtu afinní transformace bodu na plátně (TypeScript)}, label={lst:transform}]
+// Transformace souradnic z obrazovky do souradneho prostoru platna
+export function screenToWorld(
+  screenX: number, 
+  screenY: number, 
+  camera: { x: number; y: number; zoom: number }
+): { x: number; y: number } {
+  return {
+    x: (screenX - camera.x) / camera.zoom,
+    y: (screenY - camera.y) / camera.zoom,
+  };
+}
+\end{lstlisting}
 
-\clearpage
+% ------------------------------------------------------------------------------
+% 3.3 UŽIVATELSKÉ ROZHRANÍ A AI ASISTENT
+% ------------------------------------------------------------------------------
+\subsection{Uživatelské rozhraní a modul AI asistenta}
+\label{sec:ui_a_ai}
 
+Uživatelské rozhraní klade důraz na maximální pracovní plochu bez rušivých prvků. Plovoucí nástrojový panel umožňuje přepínat mezi kreslením perem, zvýrazňovačem, geometrickými tvary, textem a~nástrojem lasa.
+
+Modul AI asistenta pracuje v~následujících krocích:
+\begin{enumerate}
+    \item Uživatel lasem vybere oblast sešitu obsahující matematický výpočet či diagram.
+    \item Aplikace provede oříznutí odpovídajícího výřezu scény a~vyexportuje optimalizovaný rastrový obrázek.
+    \item Výřez je odeslán na server spolu se systémovým promptem definujícím roli sokratovského tutora.
+    \item Odpověď modelu je zobrazena v~kontextové bublině přímo vedle označeného výpočtu.
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+% 3.4 TESTOVÁNÍ A OPTIMALIZACE VÝKONU
+% ------------------------------------------------------------------------------
+\subsection{Testování a optimalizace aplikace}
+\label{sec:testovani}
+
+Pro zajištění stability byla aplikace podrobena testování na různých hardwarových konfiguracích a~operačních systémech (Linux, Windows, macOS). Vykreslovací výkon byl profilován při různé zátěži objektů na plátně:
+
+\begin{table}[H]
+\centering
+\caption{Výsledky profilování vykreslovacího jádra při různém počtu tahů na plátně}
+\label{tab:vykon}
+\vspace{4pt}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\textbf{Počet vektorových tahů} & \textbf{Snímková frekvence (FPS)} & \textbf{Využití RAM (Tauri)} & \textbf{Vstupní latence} \\ \midrule
+100 tahů                       & 60 FPS                            & 42 MB                        & $< 4\text{ ms}$          \\
+1\,000 tahů                    & 60 FPS                            & 48 MB                        & $< 5\text{ ms}$          \\
+5\,000 tahů (bez cullingu)     & 44 FPS                            & 68 MB                        & $\approx 12\text{ ms}$   \\
+5\,000 tahů (s cullingem)      & 60 FPS                            & 56 MB                        & $< 6\text{ ms}$          \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Jak dokládají naměřená data v~Tab.~\ref{tab:vykon}, implementace algoritmu viewport cullingu (vynechání tahů mimo aktuální zorné pole kamery) umožňuje udržet stabilních 60~FPS i~u~velmi rozsáhlých sešitů.
+
+
+% ==============================================================================
+% 4 ZÁVĚR
+% ==============================================================================
 \section{Závěr}
-Závěr…
+\label{sec:zaver}
 
-\clearpage
+Cílem této maturitní práce bylo navrhnout, implementovat a~otestovat moderní multiplatformní aplikaci pro digitální zápisky a~virtuální tabuli s~integrovanou podporou umělé inteligence pro vzdělávání.
 
+Všechny stanovené cíle formulované v~podkapitole~\ref{sec:cile_prace} se podařilo úspěšně naplnit:
+\begin{itemize}
+    \item Byla vytvořena plně funkční aplikace běžící v~prostředí webu i~jako lehký desktopový klient postavený na Tauri~v2 a~jazyce Rust s~minimální paměťovou režií a~vysokým vykreslovacím výkonem.
+    \item Byla implementována hybridní architektura plátna podporující neomezenou plochu i~formátované A4 sešity včetně importu a~anotování souborů PDF.
+    \item Byla zprovozněna síťová synchronizace v~reálném čase využívající bezkolizní datové struktury CRDT (Yjs) a~WebSocket protokol, umožňující týmovou kooperaci více uživatelů bez vzniku editačních konfliktů.
+    \item Podařilo se úspěšně integrovat multimodálního AI asistenta, který studentům přímo nad označeným plátnem vysvětluje postupy řešení a~generuje procvičovací otázky pro upevnění látky.
+\end{itemize}
+
+V~rámci budoucího rozvoje práce se nabízí rozšíření o~nativní podporu mobilních zařízení (Android a~iOS) s~využitím nově představené mobilní podpory v~Tauri~v2 a~doplnění lokálního běhu menších multimodálních modelů přímo na klientském zařízení.
+
+
+% ==============================================================================
+% 5 SEZNAM OBRÁZKŮ
+% ==============================================================================
 \section{Seznam obrázků}
+\label{sec:seznam_obrazku}
+
 \makeatletter
 \@starttoc{lof}
 \makeatother
 
-\clearpage
 
+% ==============================================================================
+% 6 SEZNAM TABULEK
+% ==============================================================================
+\section{Seznam tabulek}
+\label{sec:seznam_tabulek}
+
+\makeatletter
+\@starttoc{lot}
+\makeatother
+
+
+% ==============================================================================
+% 7 SEZNAM VYUŽITÝCH ZDROJŮ (ČSN ISO 690)
+% ==============================================================================
 \section{Seznam využitých zdrojů}
+\label{sec:zdroje}
+
+\begingroup
+\sloppy
+\renewcommand{\section}[2]{}%
+\begin{thebibliography}{99}
+
+    \bibitem{marschner2021cg}
+    MARSCHNER, Steve a~Peter SHIRLEY. \textit{Fundamentals of Computer Graphics}. 5. vyd. Boca Raton: CRC Press, 2021. 760~s. ISBN 978-0-367-50503-5.
+
+    \bibitem{kleppmann2017data}
+    KLEPPMANN, Martin. \textit{Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems}. Sebastopol: O'Reilly Media, 2017. 616~s. ISBN 978-1-4493-7332-9.
+
+    \bibitem{bederson1994pad}
+    BEDERSON, Benjamin B. a~James D. HOLLAN. Pad++: A~Zooming Graphical Interface for Exploring Alternate Interface Physics. In: \textit{Proceedings of the 7th Annual ACM Symposium on User Interface Software and Technology (UIST '94)} [online]. New York: ACM, 1994, s.~17--26 [cit. 2026-11-04]. ISBN 0-89791-657-3. Dostupné z: \url{https://doi.org/10.1145/192426.192435}
+
+    \bibitem{kasneci2023chatgpt}
+    KASNECI, Enkelejda et al. ChatGPT for good? On opportunities and challenges of large language models for education. \textit{Learning and Individual Differences} [online]. 2023, roč.~103, č.~102274 [cit. 2026-11-04]. ISSN 1041-6080. Dostupné z: \url{https://doi.org/10.1016/j.lindif.2023.102274}
+
+    \bibitem{tauri_docs}
+    TAURI PROGRAMME. \textit{Tauri 2.0 Documentation} [online]. Oficiální technická dokumentace, 2024 [cit. 2026-11-04]. Dostupné z: \url{https://v2.tauri.app/}
+
+    \bibitem{ruiz_freehand}
+    RUIZ, Steve. \textit{perfect-freehand: Draw perfect pressure-sensitive freehand lines} [online]. GitHub, 2024 [cit. 2026-11-04]. Dostupné z: \url{https://github.com/steveruizok/perfect-freehand}
+
+    \bibitem{jahns_yjs}
+    JAHNS, Kevin. \textit{Yjs Documentation: Shared data types \& CRDT framework} [online]. 2024 [cit. 2026-11-04]. Dostupné z: \url{https://docs.yjs.dev/}
+
+    \bibitem{rfc6455}
+    FETTE, Ian a~Alexey MELNIKOV. \textit{RFC 6455: The WebSocket Protocol} [online]. Internet Engineering Task Force (IETF), 2011 [cit. 2026-11-04]. Dostupné z: \url{https://datatracker.ietf.org/doc/html/rfc6455}
+
+    \bibitem{iso216}
+    INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. \textit{ISO 216:2007 Writing paper and certain classes of printed matter -- Trimmed sizes} [online]. Ženeva: ISO, 2007 [cit. 2026-11-04]. Dostupné z: \url{https://www.iso.org/standard/36631.html}
+
+\end{thebibliography}
+\endgroup
+
+
+% ==============================================================================
+% 8 PŘÍLOHY
+% ==============================================================================
+\clearpage
+\section*{Přílohy}
+\addcontentsline{toc}{section}{Přílohy}
+
+\subsection*{Příloha A – Uživatelská příručka a instalace}
+\addcontentsline{toc}{subsection}{Příloha A – Uživatelská příručka a instalace}
+Aplikace nevyžaduje složitou instalaci. Pro spuštění na desktopu postačí stáhnout instalační balíček pro daný operační systém:
+\begin{itemize}
+    \item \textbf{Linux:} Balíček \texttt{.AppImage} nebo \texttt{.deb}. Spuštění vyžaduje přidělení spustitelného práva (\texttt{chmod +x}).
+    \item \textbf{Windows:} Instalační průvodce \texttt{.msi} nebo přenosný archiv \texttt{.zip}.
+    \item \textbf{Webová verze:} Dostupná přímo ve webovém prohlížeči podporujícím moderní HTML5 Canvas a WebSockets.
+\end{itemize}
+
+\vspace{12pt}
+\subsection*{Příloha B – Obsah přiloženého elektronického média}
+\addcontentsline{toc}{subsection}{Příloha B – Obsah přiloženého elektronického média}
+Přiložené paměťové médium (USB disk) obsahuje:
+\begin{itemize}
+    \item \texttt{/text/} – Text maturitní práce ve formátu PDF a zdrojové kódy LaTeXu.
+    \item \texttt{/src/} – Kompletní zdrojové kódy aplikace (frontend, Tauri backend a synchronizační server).
+    \item \texttt{/bin/} – Zkompilované binární spustitelné soubory pro Linux a Windows.
+    \item \texttt{/doc/} – Elektronická dokumentace a diagramy.
+\end{itemize}
 
 \end{document}

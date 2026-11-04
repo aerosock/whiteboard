@@ -1,21 +1,30 @@
 # Makefile pro kompilaci maturitní práce v LaTeXu
+# Střední průmyslová škola a Gymnázium Na Třebešíně
 
 PDF_ENGINE = pdflatex
-MAIN = main
+TEMPLATE = main
+DRAFT = prace
 
-.PHONY: all pdf watch clean
+.PHONY: all pdf template draft watch clean
 
-all: pdf
+all: template draft
 
-# Dvojí kompilace zajistí správné přepočítání čísel stran v Obsahu a Seznamu obrázků
-pdf:
-	$(PDF_ENGINE) -interaction=nonstopmode $(MAIN).tex
-	$(PDF_ENGINE) -interaction=nonstopmode $(MAIN).tex
+# Kompilace hlavní šablony (main.pdf)
+template:
+	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE).tex
+	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE).tex
 
-# Automatická rekompilace při každém uložení souboru (vyžaduje balíček latexmk)
+# Kompilace rozpracovaného textu práce (prace.pdf)
+draft:
+	$(PDF_ENGINE) -interaction=nonstopmode $(DRAFT).tex
+	$(PDF_ENGINE) -interaction=nonstopmode $(DRAFT).tex
+
+pdf: template
+
+# Automatická rekompilace při každém uložení souboru (vyžaduje latexmk)
 watch:
-	latexmk -pdf -pvc -interaction=nonstopmode $(MAIN).tex
+	latexmk -pdf -pvc -interaction=nonstopmode $(TEMPLATE).tex
 
-# Smazání pomocných souborů (ponechá výsledné main.pdf)
+# Smazání dočasných a pomocných souborů
 clean:
 	rm -f *.aux *.log *.out *.toc *.lof *.lot *.bbl *.blg *.fls *.fdb_latexmk *.synctex.gz
