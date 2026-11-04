@@ -1,0 +1,589 @@
+% ==============================================================================
+% GRADUATION THESIS TEMPLATE (ENGLISH VERSION)
+% Secondary Technical School and Gymnasium Na Třebešíně
+% ==============================================================================
+
+\documentclass[12pt, a4paper, oneside]{article}
+
+% ------------------------------------------------------------------------------
+% 1. THESIS METADATA
+% ------------------------------------------------------------------------------
+\newcommand{\NazevPrace}{Interactive Digital Notebook with Integrated AI Assistant for Education}
+\newcommand{\NazevPraceVelkymi}{INTERACTIVE DIGITAL NOTEBOOK WITH INTEGRATED AI ASSISTANT FOR EDUCATION}
+\newcommand{\NazevPraceCs}{Interaktivní digitální poznámkový blok s~integrovaným AI asistentem pro výuku}
+\newcommand{\Autor}{Kostiantyn Kudinov}
+\newcommand{\Vedouci}{Mgr. Jan Souhrada}
+\newcommand{\Trida}{4.G}
+\newcommand{\SkolniRok}{2026 / 2027}
+
+% ------------------------------------------------------------------------------
+% 2. ENCODING, LANGUAGE AND FONTS (Times New Roman 12pt + Arial for headings)
+% ------------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+% Serif font for body text (Times New Roman / TeX Gyre Termes)
+\usepackage{tgtermes}
+% Sans-serif font for headings and title page (Arial / TeX Gyre Heros)
+\usepackage{tgheros}
+% Monospace font for code (TeX Gyre Cursor)
+\usepackage{tgcursor}
+
+% Microtypography
+\usepackage{microtype}
+
+% ------------------------------------------------------------------------------
+% 3. PAGE MARGINS AND LINE SPACING (2.5 cm margins, 1.5 line spacing)
+% ------------------------------------------------------------------------------
+\usepackage[
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm,
+    footskip=1.25cm
+]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ------------------------------------------------------------------------------
+% 4. HEADERS, FOOTERS AND PAGE NUMBERING ("- 5 -")
+% ------------------------------------------------------------------------------
+\usepackage{fancyhdr}
+
+\renewcommand{\thepage}{- \arabic{page} -}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\normalfont\fontsize{12pt}{14pt}\selectfont \thepage}
+
+% ------------------------------------------------------------------------------
+% 5. HEADING FORMATTING
+% ------------------------------------------------------------------------------
+\usepackage{titlesec}
+\usepackage{etoolbox}
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{3}
+
+\preto{\section}{\clearpage}
+
+% Heading 1 (\section): 16pt, sans-serif, bold
+\titleformat{\section}
+    {\normalfont\fontsize{16pt}{20pt}\selectfont\sffamily\bfseries}
+    {\thesection}{0.75em}{}
+\titlespacing*{\section}{0pt}{0pt}{12pt}
+
+% Heading 2 (\subsection): 14pt, sans-serif, bold + italic
+\titleformat{\subsection}
+    {\normalfont\fontsize{14pt}{18pt}\selectfont\sffamily\bfseries\itshape}
+    {\thesubsection}{0.75em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% Heading 3 (\subsubsection): 12pt, sans-serif, bold
+\titleformat{\subsubsection}
+    {\normalfont\fontsize{12pt}{15pt}\selectfont\sffamily\bfseries}
+    {\thesubsubsection}{0.75em}{}
+\titlespacing*{\subsubsection}{0pt}{6pt}{6pt}
+
+% Heading 4 (\paragraph)
+\titleformat{\paragraph}[hang]
+    {\normalfont\fontsize{13pt}{16pt}\selectfont\sffamily\bfseries}
+    {\theparagraph}{0.75em}{}
+\titlespacing*{\paragraph}{0pt}{6pt}{6pt}
+
+% Non-TOC heading
+\newcommand{\nadpismimoobsah}[1]{%
+    \vspace{6pt}%
+    {\normalfont\fontsize{14pt}{18pt}\selectfont\sffamily\bfseries #1\par}%
+    \vspace{2pt}%
+}
+
+% ------------------------------------------------------------------------------
+% 6. TABLE OF CONTENTS, LIST OF FIGURES AND TABLES FORMATTING
+% ------------------------------------------------------------------------------
+\makeatletter
+\renewcommand{\@pnumwidth}{3.2em}
+\renewcommand{\@tocrmarg}{4.0em}
+
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{4pt \@plus\p@}%
+    \setlength\@tempdima{1.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\leaders\hbox{$\m@th\mkern \@dotsep mu\hbox{.}\mkern \@dotsep mu$}\hfill\nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+
+\renewcommand*\l@figure[2]{%
+  \@dottedtocline{1}{0pt}{5.5em}{Figure~#1}{#2}}
+
+\renewcommand*\l@table[2]{%
+  \@dottedtocline{1}{0pt}{5.5em}{Table~#1}{#2}}
+\makeatother
+
+% ------------------------------------------------------------------------------
+% 7. PACKAGES FOR GRAPHICS, TABLES, MATH, CODE AND LINKS
+% ------------------------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\usepackage[
+    font={it},
+    labelfont={it},
+    labelsep=colon,
+    justification=centering
+]{caption}
+
+\definecolor{codebg}{rgb}{0.97, 0.97, 0.97}
+\definecolor{codeborder}{rgb}{0.85, 0.85, 0.85}
+\definecolor{codecomment}{rgb}{0.40, 0.40, 0.40}
+\definecolor{codekeyword}{rgb}{0.10, 0.20, 0.70}
+\definecolor{codestring}{rgb}{0.15, 0.50, 0.15}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeborder},
+    basicstyle=\ttfamily\fontsize{9.5pt}{12pt}\selectfont,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    numbers=left,
+    numberstyle=\tiny\color{codecomment},
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=true,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    keepspaces=true
+}
+
+\usepackage[hypertexnames=false, hidelinks, unicode]{hyperref}
+
+
+% ==============================================================================
+% DOCUMENT BODY
+% ==============================================================================
+\begin{document}
+
+\pagestyle{empty}
+
+% ------------------------------------------------------------------------------
+% PAGE 1: TITLE PAGE
+% ------------------------------------------------------------------------------
+\begin{center}
+    {\sffamily\fontsize{12pt}{15pt}\selectfont Secondary Technical School and Gymnasium Na Třebešíně\par}
+    \vspace{6pt}
+    {\sffamily\bfseries\fontsize{16pt}{20pt}\selectfont GRADUATION THESIS WITH DEFENSE\par}
+
+    \vspace{1.2cm}
+    \includegraphics[width=5.6cm]{obrazky/logo_skoly.png}
+
+    \vspace{2.2cm}
+    {\sffamily\bfseries\fontsize{16pt}{22pt}\selectfont \NazevPraceVelkymi\par}
+\end{center}
+
+\vfill
+
+{\sffamily\fontsize{10pt}{14pt}\selectfont
+\begin{tabular}{@{}p{3.5cm}l@{}}
+    Author:     & \Autor \\[6pt]
+    Supervisor: & \Vedouci \\[6pt]
+    Class:      & \Trida \\[6pt]
+    School Year:& \SkolniRok \\
+\end{tabular}
+}
+
+\vspace{0.5cm}
+\clearpage
+
+% ------------------------------------------------------------------------------
+% PAGE 2: OFFICIAL ASSIGNMENT (SCANNED DOCUMENT)
+% ------------------------------------------------------------------------------
+\noindent
+\includegraphics[width=\textwidth]{obrazky/zadani.png}
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% PAGE 3: DECLARATION OF AUTHENTICITY
+% ------------------------------------------------------------------------------
+\vspace*{7.5cm}
+
+\nadpismimoobsah{Declaration of Authenticity}
+
+I hereby declare that I have completed this graduation thesis on the topic of \textbf{\NazevPrace} independently, using the professional literature and sources listed in the attached list of references.
+
+\vspace{1.2cm}
+In Prague, Date: \makebox[4cm]{\dotfill}
+
+\vspace{1.8cm}
+\makebox[6cm]{\dotfill} \\
+\textit{Author's signature}
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% PAGE 4: ACKNOWLEDGEMENTS
+% ------------------------------------------------------------------------------
+\vspace*{6.5cm}
+
+\nadpismimoobsah{Acknowledgements}
+
+I would like to express my sincere gratitude to my graduation thesis supervisor, \textbf{\Vedouci}, for his professional guidance, valuable feedback, insightful advice, and the time dedicated to consultations throughout the preparation of this thesis.
+
+\clearpage
+
+% ==============================================================================
+% PAGE 5 ONWARDS: NUMBERING IN FOOTER ("- 5 -")
+% ==============================================================================
+\pagestyle{fancy}
+\setcounter{page}{5}
+
+% ------------------------------------------------------------------------------
+% PAGE 5: ANNOTATION (ENGLISH)
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Thesis Title:}
+\NazevPrace
+
+\nadpismimoobsah{Author:}
+\Autor
+
+\nadpismimoobsah{Supervisor:}
+\Vedouci
+
+\nadpismimoobsah{Abstract}
+The objective of this graduation thesis is to design, implement, and evaluate a lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The application combines the flexibility of an infinite zoomable canvas (ZUI) for mind mapping and brainstorming with a structured, paginated ISO 216 A4 notebook capable of importing and annotating PDF documents. The desktop client is engineered using Tauri~v2, Rust, and React, utilizing immediate-mode HTML5 Canvas rendering for responsive, low-latency drawing. Designed with a Local-First architecture, user data is stored primarily on the local disk in a portable format, ensuring offline privacy, data ownership, and instant access. Furthermore, an interactive multimodal AI tutor is integrated to provide step-by-step explanations of handwritten calculations and generate context-aware practice exercises.
+
+\nadpismimoobsah{Keywords}
+digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, PDF annotation, artificial intelligence, multimodal AI
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% PAGE 6: ANNOTATION (CZECH SUMMARY)
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Název práce:}
+\NazevPraceCs
+
+\nadpismimoobsah{Autor:}
+\Autor
+
+\nadpismimoobsah{Vedoucí práce:}
+\Vedouci
+
+\nadpismimoobsah{Abstrakt}
+Cílem této maturitní práce je navrhnout, implementovat a~otestovat odlehčený, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vykreslování s~minimální latencí. Díky architektuře Local-First jsou veškeré poznámky ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti registrace. Součástí aplikace je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
+
+\nadpismimoobsah{Klíčová slova}
+digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, anotace PDF, umělá inteligence, multimodální AI
+
+\clearpage
+
+% ------------------------------------------------------------------------------
+% PAGE 7: TABLE OF CONTENTS
+% ------------------------------------------------------------------------------
+\nadpismimoobsah{Contents}
+\makeatletter
+\@starttoc{toc}
+\makeatother
+
+\clearpage
+
+% ==============================================================================
+% 1 INTRODUCTION
+% ==============================================================================
+\section{Introduction}
+\label{sec:uvod}
+
+When studying technical disciplines and computer science, conventional word processors such as Microsoft Word or Google Docs quickly prove insufficient. Writing mathematical formulas, drawing schematics, and sketching algorithms within linear text editors is cumbersome and inefficient. A much more natural approach is writing and drawing freehand on a digital canvas or annotating lecture slides directly in PDF format.
+
+However, existing software solutions for digital note-taking suffer from distinct drawbacks. Most cross-platform desktop tools are built on the Electron framework, resulting in high RAM consumption and noticeable input latency when drawing with a stylus. Furthermore, many commercial products require mandatory online user accounts and force cloud storage. Consequently, users lose direct control over their files and cannot access their study materials without an active internet connection.
+
+This thesis focuses on developing a lightweight digital notebook that functions both as a native desktop application for Linux and Windows and can be accessed directly through a web browser. The application combines an infinite canvas for open-ended mind mapping with a structured A4-paginated notebook. Notes are stored primarily locally on disk in a portable format. In addition, the application integrates an intuitive AI assistant designed to help students understand challenging material or generate relevant practice exercises directly from their notes.
+
+% ------------------------------------------------------------------------------
+% 1.1 OBJECTIVES OF THE THESIS
+% ------------------------------------------------------------------------------
+\subsection{Objectives of the Thesis}
+\label{sec:cile_prace}
+
+\begin{enumerate}
+    \item Develop a cross-platform digital notebook application using the Tauri~v2 framework, Rust, and React.
+    \item Implement an interactive canvas offering a choice between an infinite workspace and an A4-paginated notebook, including support for importing and annotating PDF documents.
+    \item Ensure Local-First file persistence on disk in a custom portable format, with optional cloud synchronization capabilities.
+    \item Integrate an interactive AI assistant to generate explanations and practice questions based on the context of the notebook.
+\end{enumerate}
+
+
+% ==============================================================================
+% 2 THEORETICAL BACKGROUND
+% ==============================================================================
+\section{Theoretical Background}
+\label{sec:teoreticka_cast}
+
+This theoretical chapter examines the key concepts upon which the application is designed. It covers human-computer interaction (HCI) in digital note-taking environments, the mathematical principles of 2D computer graphics and coordinate transformations, the fundamentals of the Local-First architecture, and an evaluation of the chosen software stack.
+
+% ------------------------------------------------------------------------------
+% 2.1 DIGITAL WORKSPACES AND USER INTERFACES
+% ------------------------------------------------------------------------------
+\subsection{Digital Workspaces and User Interfaces}
+\label{sec:teorie_zui}
+
+In note-taking software, two contrasting approaches to workspace organization predominate: boundless spatial canvases and discrete paginated documents.
+
+\subsubsection{Concept of the Infinite Canvas (ZUI)}
+The infinite canvas concept originates from the \textit{Zoomable User Interface} (ZUI) paradigm, whose theoretical foundations were laid by Perlin and Fox in 1993 and further developed by Bederson and Hollan~\cite{bederson1994pad}. In a ZUI, the workspace is not constrained by physical window boundaries or paper margins; the scene exists within a continuous two-dimensional Euclidean plane $\mathbb{R}^2$. Users navigate this space using two fundamental degrees of freedom:
+\begin{itemize}
+    \item \textbf{Panning:} Translating the virtual camera along the $x$ and $y$ axes to explore extensive diagrams and mind maps.
+    \item \textbf{Zooming:} Smoothly adjusting the magnification factor to inspect information across different levels of semantic detail---from a bird's-eye overview of an entire course down to fine handwritten mathematical derivations.
+\end{itemize}
+
+The primary advantage of a ZUI is eliminating cognitive friction during brainstorming, as users are never required to guess or allocate page budgets in advance.
+
+\subsubsection{Paginated Notebooks and the ISO 216 Standard}
+While a ZUI excels during unstructured planning, systematic study and lecture preparation require predictable exporting and printing. Educational materials, exams, and worksheets are grounded in the international standard ISO~216~\cite{iso216}, which defines the metric A-series format. The base format A0 has an area of exactly $1\text{ m}^2$ and an aspect ratio of $1 : \sqrt{2}$, ensuring that folding a sheet in half preserves the exact proportion (the Lichtenberg ratio). The ubiquitous A4 format ($210 \times 297\text{ mm}$) serves as an ideal baseline for digital notebooks: it provides familiar visual boundaries, simplifies importing and annotating lecture slides, and enables direct printing without unintended cropping.
+
+% ------------------------------------------------------------------------------
+% 2.2 2D COMPUTER GRAPHICS AND RENDERING PRINCIPLES
+% ------------------------------------------------------------------------------
+\subsection{2D Computer Graphics and Rendering Principles}
+\label{sec:teorie_grafika}
+
+Implementing fluid digital ink requires understanding how graphical data is represented in memory and how it is transformed onto a raster display.
+
+\subsubsection{Vector vs. Raster Stroke Representation}
+In computer graphics, there are two primary approaches to image representation~\cite{marschner2021cg}:
+\begin{itemize}
+    \item \textbf{Raster Graphics:} The image is stored as a discrete two-dimensional grid of color pixels. Its principal limitation for digital handwriting is resolution dependency. Zooming in leads to blurriness and pixelation (\textit{aliasing}). Furthermore, post-processing individual strokes (such as moving or recoloring) requires complex mask segmentation operations.
+    \item \textbf{Vector Graphics:} A pen stroke is stored as an ordered sequence of geometric coordinates in space, accompanied by attributes such as pressure, color, and stroke width. The rendering engine computes a smooth curve from these points in real time (for instance, via Catmull-Rom splines or polygonal tessellation). Vector representation guarantees pristine sharpness at any zoom level, incurs minimal storage overhead (hundreds of bytes per stroke), and enables precise selection and transformation of individual objects.
+\end{itemize}
+
+\subsubsection{Rendering Model Selection: Retained Mode (SVG/DOM) vs. Immediate Mode (HTML5 Canvas)}
+In modern web and hybrid desktop environments, two primary rendering models exist:
+\begin{enumerate}
+    \item \textbf{Retained Mode (SVG/DOM):} Every graphical element (path, rectangle, text) is instantiated as an individual node within the Document Object Model (DOM). The browser manages redraw passes and pointer event dispatching automatically. However, this approach is unsuitable for handwriting: thousands of pen strokes overwhelm the DOM tree, causing excessive memory consumption and frame stutter caused by style recalculations and layout thrashing.
+    \item \textbf{Immediate Mode (HTML5 Canvas):} The Canvas element provides a bitmap drawing surface and a procedural API (Canvas 2D Context)~\cite{w3c_canvas}. The developer controls rendering directly via drawing commands executed inside the browser's \texttt{requestAnimationFrame} loop. Canvas retains no DOM nodes for individual strokes; once drawn, they exist solely as pixels within the GPU framebuffer. This architecture ensures predictable 60~FPS performance regardless of document size and enables instant, zero-latency drawing.
+\end{enumerate}
+
+\subsubsection{Mathematical Foundations of Affine Coordinate Transformations}
+Implementing pan and zoom operations requires continuous transformations between two distinct coordinate systems:
+\begin{itemize}
+    \item \textbf{Screen Coordinates ($x_{screen}, y_{screen}$):} The cursor position in pixels relative to the top-left corner of the application window.
+    \item \textbf{World Coordinates ($x_{world}, y_{world}$):} The absolute position of a point in the virtual canvas space, independent of camera position or zoom scale.
+\end{itemize}
+
+The mapping between these systems is an affine transformation, represented in homogeneous coordinates as a matrix product~\cite{marschner2021cg}:
+\begin{equation}
+    \begin{pmatrix} x_{screen} \\ y_{screen} \\ 1 \end{pmatrix} =
+    \begin{pmatrix} s & 0 & c_x \\ 0 & s & c_y \\ 0 & 0 & 1 \end{pmatrix}
+    \begin{pmatrix} x_{world} \\ y_{world} \\ 1 \end{pmatrix}
+    \label{eq:world_to_screen}
+\end{equation}
+where $s$ denotes the zoom scale factor and $c_x, c_y$ represent camera translation offsets. For inverse transformation (when converting a pointer click at $[x_{screen}, y_{screen}]$ into canvas coordinates):
+\begin{equation}
+    x_{world} = \frac{x_{screen} - c_x}{s}, \quad y_{world} = \frac{y_{screen} - c_y}{s}
+    \label{eq:screen_to_world}
+\end{equation}
+
+This fundamental calculation underpins all spatial interactions, ensuring that ink strokes align accurately under the stylus tip regardless of the current view transform.
+
+\subsubsection{High-Density Display Rendering (HiDPI and DPR)}
+A frequent pitfall in HTML5 Canvas development is blurry rendering on modern high-DPI displays (Retina, 4K monitors). Browsers utilize logical CSS pixels, which correspond to multiple physical display subpixels. This ratio is defined as the \textit{Device Pixel Ratio} (DPR):
+\begin{equation}
+    \text{DPR} = \frac{\text{Physical Screen Pixels}}{\text{Logical CSS Pixels}}
+\end{equation}
+
+If a canvas is allocated with a logical size of $800 \times 600\text{ px}$ on a screen with $\text{DPR} = 2$, the browser creates an internal $800 \times 600$ pixel buffer and upscales it to $1600 \times 1200$ physical pixels, causing noticeable softening. The solution is setting the internal canvas dimensions (\texttt{width}, \texttt{height}) scaled by the DPR while fixing its layout dimensions (\texttt{style.width}, \texttt{style.height}) in logical CSS pixels, followed by applying a context scale transformation \texttt{ctx.scale(DPR, DPR)}. This guarantees pixel-perfect crispness for every stroke.
+
+% ------------------------------------------------------------------------------
+% 2.3 LOCAL-FIRST ARCHITECTURE AND DATA PERSISTENCE
+% ------------------------------------------------------------------------------
+\subsection{Local-First Architecture and Data Persistence}
+\label{sec:teorie_local_first}
+
+In 2019, Kleppmann et al. articulated seven guiding principles for \textit{Local-First} software design~\cite{kleppmann2019localfirst}. The core objective is shifting data authority from remote cloud servers directly to the user's local device. The application reads and writes primarily from persistent local storage (such as the local filesystem on desktop or IndexedDB in web browsers).
+
+This architecture provides critical advantages for educational applications:
+\begin{itemize}
+    \item \textbf{Zero-Latency Writes:} Saving strokes and edits occurs instantaneously in local memory without waiting for remote server roundtrips.
+    \item \textbf{Unrestricted Offline Autonomy:} Students can open, review, edit, and create notes in environments without internet access (lecture halls with unstable Wi-Fi, transit).
+    \item \textbf{Data Privacy and Ownership:} Personal notes and lecture materials are not exposed to third-party cloud vulnerabilities, and users maintain direct custody of their files.
+\end{itemize}
+
+% ------------------------------------------------------------------------------
+% 2.4 EVALUATION OF UTILIZED TECHNOLOGIES
+% ------------------------------------------------------------------------------
+\subsection{Evaluation of Utilized Technologies}
+\label{sec:teorie_tech}
+
+\subsubsection{Tauri v2 and the Rust Programming Language}
+The Tauri~v2 framework~\cite{tauri_docs} was chosen for the desktop runtime. Unlike Electron, which bundles a complete Chromium engine and Node.js runtime with each application, Tauri leverages the operating system's native webview (WebKitGTK on Linux, WebView2 on Windows). The backend application logic is implemented in Rust, ensuring deterministic memory safety without the overhead of a garbage collector. This results in compact installer sizes (approximately 10~MB) and runtime memory consumption below 50~MB RAM.
+
+\subsubsection{Frontend Ecosystem: React, TypeScript, and Vite}
+The client interface is constructed using the declarative React library paired with the Vite build tool for rapid development. TypeScript's static type system catches structural errors and geometric coordinate mismatches at compile time, ensuring reliable stroke state manipulation.
+
+
+% ==============================================================================
+% 3 PRACTICAL PART
+% ==============================================================================
+\section{Practical Part}
+\label{sec:prakticka_cast}
+
+This chapter details the engineering methodology, software architecture, key algorithmic solutions, and testing procedures implemented in the Whiteboard project.
+
+% ------------------------------------------------------------------------------
+% 3.1 ARCHITECTURAL DESIGN AND PROJECT STRUCTURE
+% ------------------------------------------------------------------------------
+\subsection{Architectural Design and Project Structure}
+\label{sec:prakticka_architektura}
+\textit{(This section will document the modular separation between the React presentation layer, the low-latency Canvas component, and the native Tauri Rust bridge.)}
+
+% ------------------------------------------------------------------------------
+% 3.2 CANVAS RENDERING ENGINE IMPLEMENTATION
+% ------------------------------------------------------------------------------
+\subsection{Canvas Rendering Engine Implementation}
+\label{sec:prakticka_platno}
+\textit{(This section will detail the layered canvas architecture, pointer event capture algorithms, and variable-width stroke smoothing techniques.)}
+
+% ------------------------------------------------------------------------------
+% 3.3 MULTI-PAGE NOTEBOOK MANAGEMENT AND PDF ANNOTATION
+% ------------------------------------------------------------------------------
+\subsection{Multi-Page Notebook Management and PDF Annotation}
+\label{sec:prakticka_dokumenty}
+\textit{(This section will describe the A4 pagination model, background raster caching, and the integration of PDF.js for importing and annotating study documents.)}
+
+% ------------------------------------------------------------------------------
+% 3.4 INTEGRATION OF THE VISUAL AI ASSISTANT
+% ------------------------------------------------------------------------------
+\subsection{Integration of the Visual AI Assistant for Education}
+\label{sec:prakticka_ai}
+\textit{(This section will focus on the region-selection tool, Base64 viewport snapshotting, and the integration of multimodal Vision-Language APIs with pedagogical prompts.)}
+
+% ------------------------------------------------------------------------------
+% 3.5 TESTING AND PERFORMANCE OPTIMIZATION
+% ------------------------------------------------------------------------------
+\subsection{Testing and Performance Optimization}
+\label{sec:prakticka_testovani}
+\textit{(This section will present frame-rate benchmarks, memory usage comparisons against Electron-based tools, and verification across Linux and Windows.)}
+
+
+% ==============================================================================
+% 4 CONCLUSION
+% ==============================================================================
+\section{Conclusion}
+\label{sec:zaver}
+
+\textit{(The conclusion will summarize the completed software deliverables, evaluate the fulfillment of the established goals, and outline potential future extensions.)}
+
+
+% ==============================================================================
+% 5 LIST OF FIGURES
+% ==============================================================================
+\section{List of Figures}
+\label{sec:seznam_obrazku}
+
+\makeatletter
+\@starttoc{lof}
+\makeatother
+
+
+% ==============================================================================
+% 6 LIST OF TABLES
+% ==============================================================================
+\section{List of Tables}
+\label{sec:seznam_tabulek}
+
+\makeatletter
+\@starttoc{lot}
+\makeatother
+
+
+% ==============================================================================
+% 7 REFERENCES (ISO 690)
+% ==============================================================================
+\section{References}
+\label{sec:zdroje}
+
+\begingroup
+\sloppy
+\renewcommand{\section}[2]{}%
+\begin{thebibliography}{99}
+
+    \bibitem{marschner2021cg}
+    MARSCHNER, Steve and Peter SHIRLEY. \textit{Fundamentals of Computer Graphics}. 5th ed. Boca Raton: CRC Press, 2021. 760~p. ISBN 978-0-367-50503-5.
+
+    \bibitem{bederson1994pad}
+    BEDERSON, Benjamin B. and James D. HOLLAN. Pad++: A~Zooming Graphical Interface for Exploring Alternate Interface Physics. In: \textit{Proceedings of the 7th Annual ACM Symposium on User Interface Software and Technology (UIST '94)} [online]. New York: ACM, 1994, pp.~17--26 [accessed 2026-11-04]. ISBN 0-89791-657-3. Available at: \url{https://doi.org/10.1145/192426.192435}
+
+    \bibitem{kleppmann2019localfirst}
+    KLEPPMANN, Martin, Adam WIGGINS, Peter VAN HARDENBERG and Mark MCGRANAGHAN. Local-first software: you own your data, in spite of the cloud. In: \textit{Proceedings of the 2019 ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward! 2019)} [online]. New York: ACM, 2019, pp.~154--178 [accessed 2026-11-04]. Available at: \url{https://doi.org/10.1145/3359591.3359737}
+
+    \bibitem{w3c_canvas}
+    W3C. \textit{HTML Canvas 2D Context: W3C Recommendation} [online]. World Wide Web Consortium, 2021 [accessed 2026-11-04]. Available at: \url{https://www.w3.org/TR/2dcontext/}
+
+    \bibitem{iso216}
+    INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. \textit{ISO 216:2007 Writing paper and certain classes of printed matter -- Trimmed sizes} [online]. Geneva: ISO, 2007 [accessed 2026-11-04]. Available at: \url{https://www.iso.org/standard/36631.html}
+
+    \bibitem{tauri_docs}
+    TAURI PROGRAMME. \textit{Tauri 2.0 Documentation} [online]. Official technical documentation, 2024 [accessed 2026-11-04]. Available at: \url{https://v2.tauri.app/}
+
+    \bibitem{ruiz_freehand}
+    RUIZ, Steve. \textit{perfect-freehand: Draw perfect pressure-sensitive freehand lines} [online]. GitHub, 2024 [accessed 2026-11-04]. Available at: \url{https://github.com/steveruizok/perfect-freehand}
+
+\end{thebibliography}
+\endgroup
+
+
+% ==============================================================================
+% 8 APPENDICES
+% ==============================================================================
+\clearpage
+\section*{Appendices}
+\addcontentsline{toc}{section}{Appendices}
+
+\subsection*{Appendix A -- User Guide and Installation}
+\addcontentsline{toc}{subsection}{Appendix A -- User Guide and Installation}
+The application requires no complicated setup. To run the desktop application, download the appropriate package for your platform:
+\begin{itemize}
+    \item \textbf{Linux:} \texttt{.AppImage} or \texttt{.deb} package. Ensure execution permissions are granted (\texttt{chmod +x}).
+    \item \textbf{Windows:} \texttt{.msi} installer or standalone portable \texttt{.zip} archive.
+    \item \textbf{Web Version:} Accessible directly in any modern browser supporting HTML5 Canvas and Pointer Events.
+\end{itemize}
+
+\vspace{12pt}
+\subsection*{Appendix B -- Contents of the Attached Electronic Medium}
+\addcontentsline{toc}{subsection}{Appendix B -- Contents of the Attached Electronic Medium}
+The attached storage medium (USB drive) contains:
+\begin{itemize}
+    \item \texttt{/text/} -- Thesis text in PDF format and LaTeX source files.
+    \item \texttt{/src/} -- Full source code of the application (frontend, Tauri backend, and configuration).
+    \item \texttt{/bin/} -- Compiled application binaries for Linux and Windows.
+    \item \texttt{/doc/} -- Electronic documentation and architecture diagrams.
+\end{itemize}
+
+\end{document}

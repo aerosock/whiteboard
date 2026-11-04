@@ -3,16 +3,24 @@
 
 PDF_ENGINE = pdflatex
 TEMPLATE = main
+TEMPLATE_EN = main-en
 DRAFT = prace
 
-.PHONY: all pdf template draft watch clean
+.PHONY: all pdf template template-en en draft watch watch-en clean
 
-all: template draft
+all: template template-en draft
 
-# Kompilace hlavní šablony (main.pdf)
+# Kompilace hlavní české šablony (main.pdf)
 template:
 	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE).tex
 	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE).tex
+
+# Kompilace anglické verze šablony (main-en.pdf)
+template-en:
+	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE_EN).tex
+	$(PDF_ENGINE) -interaction=nonstopmode $(TEMPLATE_EN).tex
+
+en: template-en
 
 # Kompilace rozpracovaného textu práce (prace.pdf)
 draft:
@@ -24,6 +32,9 @@ pdf: template
 # Automatická rekompilace při každém uložení souboru (vyžaduje latexmk)
 watch:
 	latexmk -pdf -pvc -interaction=nonstopmode $(TEMPLATE).tex
+
+watch-en:
+	latexmk -pdf -pvc -interaction=nonstopmode $(TEMPLATE_EN).tex
 
 # Smazání dočasných a pomocných souborů
 clean:
