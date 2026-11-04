@@ -277,7 +277,7 @@ I would like to express my sincere gratitude to my graduation thesis supervisor,
 \Vedouci
 
 \nadpismimoobsah{Abstract}
-The objective of this graduation thesis is to design, implement, and evaluate a lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The application combines the flexibility of an infinite zoomable canvas (ZUI) for mind mapping and brainstorming with a structured, paginated ISO 216 A4 notebook capable of importing and annotating PDF documents. The desktop client is engineered using Tauri~v2, Rust, and React, utilizing immediate-mode HTML5 Canvas rendering for responsive, low-latency drawing. Designed with a Local-First architecture, user data is stored primarily on the local disk in a portable format, ensuring offline privacy, data ownership, and instant access. Furthermore, an interactive multimodal AI tutor is integrated to provide step-by-step explanations of handwritten calculations and generate context-aware practice exercises.
+The objective of this graduation thesis is to design, implement, and evaluate a~lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges an infinite zoomable canvas (ZUI) for mind mapping with a~structured A4 paginated notebook capable of importing and annotating PDF documents. Based on Tauri~v2, Rust, and React, the client utilizes an immediate-mode HTML5 Canvas rendering architecture to ensure low-latency pen input and smooth 60~FPS performance. In contrast to conventional cloud-dependent solutions, the application follows Local-First design principles, storing notebooks directly on the user's local disk in a~portable format without requiring an account. Furthermore, an interactive multimodal AI tutor is integrated to provide contextual explanations of handwritten calculations and generate automated practice questions.
 
 \nadpismimoobsah{Keywords}
 digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, PDF annotation, artificial intelligence, multimodal AI
@@ -297,7 +297,7 @@ digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 C
 \Vedouci
 
 \nadpismimoobsah{Abstrakt}
-Cílem této maturitní práce je navrhnout, implementovat a~otestovat odlehčený, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vykreslování s~minimální latencí. Díky architektuře Local-First jsou veškeré poznámky ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti registrace. Součástí aplikace je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
+Cílem této maturitní práce je navrhnout, implementovat a~otestovat lehký, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vektorové vykreslování s~minimální latencí. Na rozdíl od běžných komerčních řešení je aplikace navržena podle principů Local-First – veškeré poznámky jsou ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti zakládání uživatelského účtu. Součástí projektu je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
 
 \nadpismimoobsah{Klíčová slova}
 digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, anotace PDF, umělá inteligence, multimodální AI
@@ -322,11 +322,11 @@ digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeSc
 
 When studying technical disciplines and computer science, conventional word processors such as Microsoft Word or Google Docs quickly prove insufficient. Writing mathematical formulas, drawing schematics, and sketching algorithms within linear text editors is cumbersome and inefficient. A much more natural approach is writing and drawing freehand on a digital canvas or annotating lecture slides directly in PDF format.
 
-However, existing software solutions for digital note-taking suffer from distinct drawbacks. Most tools lack native Linux support, and the remainder are largely built upon the Electron framework, which incurs substantial RAM overhead and noticeable input latency due to the embedded Chromium engine. Furthermore, many commercial products require mandatory online user accounts and force cloud storage. Consequently, users lose direct control over their files and cannot access their study materials without an active internet connection.
+However, existing software solutions for digital note-taking suffer from distinct drawbacks. Most tools lack native Linux support, and the remainder are largely built upon the Electron framework, which incurs substantial RAM overhead and noticeable input latency due to the embedded Chromium engine. Furthermore, many commercial products require mandatory online user accounts and force cloud storage that strips away privacy and independence.
 
-Virtually the only widespread application that circumvents these issues and runs natively on Linux is Xournal++. In several respects, however, it lags behind modern digital notebooks: it lacks an infinite canvas mode, cannot run in a web browser, and relies on a traditional desktop user interface that buries features inside complex menus and small toolbar buttons, making touch and stylus interaction cumbersome.
+Virtually the only widespread application that doesn't have these issues and runs natively on Linux is Xournal++. In several respects, however, it lags behind modern digital notebooks: it lacks an infinite canvas mode, cannot run in a web browser, and relies on a traditional desktop user interface that buries features inside complex menus and small toolbar buttons, making touch and stylus interaction cumbersome.
 
-This thesis focuses on developing a lightweight digital notebook that unites the clean user experience of modern applications with the fast, efficient Local-First philosophy of Xournal++. The application functions as a desktop program for Linux and Windows, while also supporting execution directly in a web browser and on Android mobile devices. The application combines an infinite canvas for open-ended mind mapping with a structured A4-paginated notebook. Notes are stored primarily locally on disk in a portable format. In addition, the application integrates an intuitive AI assistant designed to help students understand challenging material or generate relevant practice exercises directly from their notes.
+This thesis focuses on developing a lightweight digital notebook that brings together the clean user experience of modern applications with the fast, efficient Local-First philosophy of Xournal++. The application functions as a desktop program for Linux and Windows, while also being usable as a web-application and on Android mobile devices. The application combines an infinite canvas mode with a structured A4-paginated notebook. Notes are stored locally on disk in a proprietary format with cloud synchronization capabilities. In addition, the application integrates an intuitive AI assistant designed to help students understand challenging material or generate relevant practice exercises directly from their notes.
 
 % ------------------------------------------------------------------------------
 % 1.1 OBJECTIVES OF THE THESIS
@@ -361,8 +361,8 @@ In note-taking software, two contrasting approaches to workspace organization pr
 \subsubsection{Concept of the Infinite Canvas (ZUI)}
 The infinite canvas concept originates from the \textit{Zoomable User Interface} (ZUI) paradigm, whose theoretical foundations were laid by Perlin and Fox in 1993 and further developed by Bederson and Hollan~\cite{bederson1994pad}. In a ZUI, the workspace is not constrained by physical window boundaries or paper margins; the scene exists within a continuous two-dimensional Euclidean plane $\mathbb{R}^2$. Users navigate this space using two fundamental degrees of freedom:
 \begin{itemize}
-    \item \textbf{Panning:} Translating the virtual camera along the $x$ and $y$ axes to explore extensive diagrams and mind maps.
-    \item \textbf{Zooming:} Smoothly adjusting the magnification factor to inspect information across different levels of semantic detail---from a bird's-eye overview of an entire course down to fine handwritten mathematical derivations.
+    \item \textbf{Panning:} Moving the camera along the $x$ and $y$ axes, allowing smooth navigation through the document's content.
+    \item \textbf{Zooming:} Smoothly adjusting the magnification factor to work across different levels of detail---from a global overview of the entire project down to detailed microscopic formulas.
 \end{itemize}
 
 The primary advantage of a ZUI is eliminating cognitive friction during brainstorming, as users are never required to guess or allocate page budgets in advance.
@@ -376,7 +376,7 @@ While a ZUI excels during unstructured planning, systematic study and lecture pr
 \section{Practical Part}
 \label{sec:prakticka_cast}
 
-\textit{(This chapter will be elaborated during project implementation.)}
+
 
 
 % ==============================================================================
@@ -385,7 +385,7 @@ While a ZUI excels during unstructured planning, systematic study and lecture pr
 \section{Conclusion}
 \label{sec:zaver}
 
-\textit{(To be completed upon final project implementation and goal evaluation.)}
+
 
 
 % ==============================================================================
@@ -416,6 +416,5 @@ While a ZUI excels during unstructured planning, systematic study and lecture pr
 \section*{Appendices}
 \addcontentsline{toc}{section}{Appendices}
 
-\textit{(Appendices will be provided upon thesis submission.)}
 
 \end{document}

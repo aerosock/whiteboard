@@ -305,7 +305,7 @@ Děkuji tímto vedoucímu maturitní práce panu \textbf{\VedouciDativ} za odbor
 \Vedouci
 
 \nadpismimoobsah{Abstrakt}
-Cílem této maturitní práce je navrhnout, implementovat a~otestovat odlehčený, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vektorové vykreslování s~minimální latencí. Na rozdíl od běžných komerčních řešení je aplikace navržena podle principů Local-First – veškeré poznámky jsou ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti zakládání uživatelského účtu. Součástí projektu je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
+Cílem této maturitní práce je navrhnout, implementovat a~otestovat lehký, multiplatformní digitální poznámkový blok a~virtuální tabuli s~integrovaným asistentem na bázi umělé inteligence pro podporu výuky a~samostatného studia. Aplikace kombinuje výhody neomezené plochy (ZUI) pro volné myšlenkové mapy se stránkovaným sešitem formátu A4 a~možností importu i~anotování dokumentů PDF. Klientská vrstva je postavena na frameworku Tauri~v2, jazyce Rust a~knihovně React s~využitím HTML5 Canvasu pro plynulé vektorové vykreslování s~minimální latencí. Na rozdíl od běžných komerčních řešení je aplikace navržena podle principů Local-First – veškeré poznámky jsou ukládány primárně lokálně na disk v~přenosném formátu bez nutnosti zakládání uživatelského účtu. Součástí projektu je také integrovaný multimodální AI asistent pro kontextové vysvětlování ručně psané látky a~tvorbu procvičovacích úloh.
 
 \nadpismimoobsah{Klíčová slova}
 digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, anotace PDF, umělá inteligence, multimodální AI
@@ -316,7 +316,7 @@ digitální poznámkový blok, virtuální tabule, Tauri v2, Rust, React, TypeSc
 % STRANA 6: ANOTAČNÍ LIST (ANGLICKY — SUMMARY)
 % ------------------------------------------------------------------------------
 \nadpismimoobsah{Summary}
-The objective of this graduation thesis is to design, implement, and evaluate a~lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges the affordances of an infinite zoomable canvas (ZUI) for mind mapping with a~structured ISO~216 A4 paginated notebook capable of importing and annotating PDF documents. Engineered atop Tauri~v2, Rust, and React, the client utilizes an immediate-mode HTML5 Canvas rendering architecture to ensure low-latency pen input and smooth 60~FPS performance. In contrast to conventional cloud-dependent solutions, the application follows Local-First design principles, storing notebooks directly on the user's local disk in a~portable format without requiring an account. Furthermore, an interactive multimodal AI tutor is integrated to provide contextual explanations of handwritten calculations and generate automated practice questions.
+The objective of this graduation thesis is to design, implement, and evaluate a~lightweight, cross-platform digital notebook and virtual whiteboard application with an integrated artificial intelligence assistant for educational workflows and self-directed study. The system merges infinite zoomable canvas (ZUI) for mind mapping with a~structured A4 paginated notebook capable of importing and annotating PDF documents. Based on Tauri~v2, Rust, and React, the client utilizes an immediate-mode HTML5 Canvas rendering architecture to ensure low-latency pen input and smooth 60~FPS performance. In contrast to conventional cloud-dependent solutions, the application follows Local-First design principles, storing notebooks directly on the user's local disk in a~portable format without requiring an account. Furthermore, an interactive multimodal AI tutor is integrated to provide contextual explanations of handwritten calculations and generate automated practice questions.
 
 \nadpismimoobsah{Keywords}
 digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 Canvas, Local-First, offline-first, PDF annotation, artificial intelligence, multimodal AI
@@ -380,8 +380,8 @@ V~oblasti softwaru pro zaznamenávání informací existují dva protichůdné p
 \subsubsection{Koncept nekonečného plátna (ZUI)}
 Koncept nekonečného plátna vychází z~paradagmatu \textit{Zoomable User Interface} (ZUI), jehož teoretické základy položili Perlin a~Fox v~roce 1993 a~dále rozvinuli Bederson a~Hollan~\cite{bederson1994pad}. V~rozhraní ZUI není pracovní prostor omezen fyzickými hranicemi okna či listu papíru; scéna existuje v~souvislé dvourozměrné eukleidovské rovině $\mathbb{R}^2$. Uživatel se v~tomto prostoru pohybuje prostřednictvím dvou základních stupňů volnosti:
 \begin{itemize}
-    \item \textbf{Posun (Panning):} Translace virtuální kamery v~osách $x$ a~$y$, která umožňuje procházet rozsáhlé diagramy a~myšlenkové mapy.
-    \item \textbf{Změna měřítka (Zooming):} Plynulá změna faktoru zvětšení, která umožňuje pracovat na různých úrovních sémantického detailu -- od globálního nadhledu nad celým projektem až po detailní mikroskopický zápis vzorců.
+    \item \textbf{Posun (Panning):} Pohyb kamery v~osách $x$ a~$y$, která umožňuje plynule procházet obsah dokumentu.
+    \item \textbf{Změna měřítka (Zooming):} Plynulá změna faktoru zvětšení, která umožňuje pracovat na různých úrovních detailu -- od globálního nadhledu nad celým projektem až po detailní mikroskopický zápis vzorců.
 \end{itemize}
 
 Výhodou ZUI je eliminace kognitivních bariér při brainstormingu, neboť uživatel není nucen předem odhadovat potřebný rozsah stránky.
@@ -395,8 +395,6 @@ Zatímco ZUI exceluje při volném plánování, při systematickém studiu a~p�
 \section{Praktická část}
 \label{sec:prakticka_cast}
 
-\textit{(Tato kapitola bude vypracována v~průběhu realizace projektu.)}
-
 
 % ==============================================================================
 % 4 ZÁVĚR
@@ -404,7 +402,6 @@ Zatímco ZUI exceluje při volném plánování, při systematickém studiu a~p�
 \section{Závěr}
 \label{sec:zaver}
 
-\textit{(Bude doplněno po dokončení implementace a~vyhodnocení cílů.)}
 
 
 
@@ -436,6 +433,5 @@ Zatímco ZUI exceluje při volném plánování, při systematickém studiu a~p�
 \section*{Přílohy}
 \addcontentsline{toc}{section}{Přílohy}
 
-\textit{(Přílohy budou doplněny k~odevzdání práce.)}
 
 \end{document}
