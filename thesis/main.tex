@@ -253,7 +253,7 @@
 % STRANA 2: ZADÁNÍ (NASKENOVANÝ DOKUMENT)
 % ------------------------------------------------------------------------------
 \noindent
-\includegraphics[width=\textwidth]{obrazky/zadani.png}
+\includegraphics[width=\textwidth]{obrazky/zadani.png}odlehčeného
 
 \clearpage
 
@@ -339,15 +339,11 @@ digital notebook, virtual whiteboard, Tauri v2, Rust, React, TypeScript, HTML5 C
 \section{Úvod}
 \label{sec:uvod}
 
-V~současném technickém a~přírodovědném vzdělávání představuje efektivní zaznamenávání myšlenek, odvozování matematických vztahů a~tvorba schematických náčrtů zásadní součást studijního procesu. Zatímco humanitní obory si často vystačí s~lineárními textovými procesory, jako jsou Microsoft Word či Google Docs, studium informatiky, matematiky či elektrotechniky vyžaduje dvourozměrnou volnost. Běžný textový editor selhává ve chvíli, kdy je potřeba načrtnout graf algoritmu, volnou rukou zapsat soustavu diferenciálních rovnic nebo přímo anotovat přednáškové materiály distribuované ve formátu PDF.
+Při studiu technických oborů a~programování běžné textové procesory jako Microsoft Word nebo Google Docs nestačí. Psaní matematických vzorců, kreslení schémat a~náčrty algoritmů jsou v~nich zdlouhavé a~nepraktické. Mnohem přirozenější je psát a~kreslit volnou rukou na digitálním plátně nebo vpisovat poznámky přímo do přednáškových materiálů ve formátu PDF.
 
-Dlouhodobým standardem pro tyto účely zůstávají klasické papírové sešity formátu A4. Fyzický papír však postrádá výhody digitálního světa: možnost neomezených úprav bez škrtání, okamžité vyhledávání, snadnou archivaci a~možnost práce s~digitálními podklady. Existující softwarová řešení na trhu přitom trpí dvěma zásadními nedostatky:
-\begin{enumerate}
-    \item \textbf{Vysoká paměťová a výkonnostní náročnost:} Většina multiplatformních desktopových nástrojů je postavena na frameworku Electron. Tento přístup s~sebou nese nutnost přibalit ke každé aplikaci celou instanci prohlížeče Chromium a~prostředí Node.js, což vede k~enormní spotřebě operační paměti (stovky megabajtů RAM pro prázdné plátno), pomalému spouštění a~znatelné vstupní latenci při kreslení stylusem.
-    \item \textbf{Vynucená cloudová závislost a ztráta kontroly nad daty:} Mnoho komerčních aplikací nutí uživatele ukládat veškerá data na vzdálené servery poskytovatele pod proprietárními účty. V~případě výpadku internetového připojení nebo nedostupnosti služby je přístup ke studijním materiálům paralyzován.
-\end{enumerate}
+Dostupné aplikace pro digitální poznámky však mají své slabiny. Většina multiplatformních nástrojů je postavena na frameworku Electron, což znamená vysokou spotřebu paměti RAM a~často i~znatelnou odezvu při kreslení perem. Komerční řešení navíc často vyžadují vytvoření online účtu a~ukládání veškerých dat do cloudu. Uživatel tak nemá své soubory plně pod kontrolou a~bez internetového připojení se k~nim nedostane.
 
-Tato maturitní práce se proto věnuje návrhu a~realizaci odlehčeného, multiplatformního digitálního poznámkového bloku s~architekturou \textit{Local-First}. Aplikace kombinuje výhody neomezeného plátna pro myšlenkové mapy se strukturovaným vícestránkovým sešitem formátu A4. Desktopová verze je implementována pomocí moderního frameworku Tauri~v2 a~jazyka Rust, což zajišťuje minimální hardwarové nároky a~okamžitou odezvu. Součástí projektu je rovněž návrh integrovaného vizuálního asistenta využívajícího multimodální umělou inteligenci, který studentovi umožňuje označit libovolný ručně psaný výpočet na plátně a~získat k~němu vysvětlení a~metodické vedení.
+Tato práce se zabývá vývojem lehkého digitálního poznámkového bloku, který funguje jako desktopová aplikace pro Linux a~Windows a~lze jej spustit i~ve webovém prohlížeči. Aplikace kombinuje nekonečnou plochu pro myšlenkové mapy se stránkovaným sešitem formátu A4. Poznámky se ukládají primárně lokálně na disk v~přenosném formátu. Součástí je také jednoduchý AI asistent, který pomáhá s~vysvětlením probírané látky nebo tvorbou procvičovacích otázek přímo z~obsahu sešitu.
 
 % ------------------------------------------------------------------------------
 % 1.1 CÍLE PRÁCE
@@ -356,10 +352,10 @@ Tato maturitní práce se proto věnuje návrhu a~realizaci odlehčeného, multi
 \label{sec:cile_prace}
 
 \begin{enumerate}
-    \item Naprogramování multiplatformní desktopové aplikace digitálního poznámkového bloku pomocí frameworku Tauri~v2, jazyka Rust a~knihovny React.
+    \item Naprogramování multiplatformní aplikace digitálního poznámkového bloku pomocí frameworku Tauri~v2, jazyka Rust a~knihovny React.
     \item Vytvoření interaktivního plátna s~volbou mezi nekonečnou plochou a~stránkovaným sešitem formátu A4, včetně možnosti importu a~anotování dokumentů PDF.
-    \item Zajištění spolehlivého lokálního ukládání sešitů na disk a~jejich exportu do vlastního přenosného formátu bez nutnosti připojení k~internetu.
-    \item Integrace vizuálního AI asistenta, který umožní označit ručně psaný příklad na plátně a~poskytne studentovi vysvětlení či nápovědu k~postupu.
+    \item Lokální ukládání sešitů na disk ve vlastním přenosném formátu s~možností synchronizace do cloudového úložiště.
+    \item Integrace interaktivního AI asistenta pro generování vysvětlení a~procvičovacích otázek na základě kontextu ze sešitu.
 \end{enumerate}
 
 
