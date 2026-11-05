@@ -59,45 +59,41 @@ function MacroPaperGraphic({ style }: { style: PaperStyle }) {
   if (style === "lined") {
     return (
       <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
-        {/* Red margin line on left */}
         <line x1="5.5" y1="2" x2="5.5" y2="18" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
-        {/* Close-up ruled lines */}
-        <line x1="2" y1="5.5" x2="18" y2="5.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <line x1="2" y1="10.5" x2="18" y2="10.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <line x1="2" y1="15.5" x2="18" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="2" y1="5.5" x2="18" y2="5.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <line x1="2" y1="10.5" x2="18" y2="10.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <line x1="2" y1="15.5" x2="18" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
       </svg>
     );
   }
   if (style === "grid") {
     return (
       <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
-        {/* 2x2 close-up graph grid cells */}
-        <line x1="6.5" y1="2" x2="6.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <line x1="13.5" y1="2" x2="13.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <line x1="2" y1="6.5" x2="18" y2="6.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <line x1="2" y1="13.5" x2="18" y2="13.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="6.5" y1="2" x2="6.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <line x1="13.5" y1="2" x2="13.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <line x1="2" y1="6.5" x2="18" y2="6.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
+        <line x1="2" y1="13.5" x2="18" y2="13.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
       </svg>
     );
   }
   if (style === "dots") {
     return (
       <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
-        {/* 3x3 close-up bullet journal dots */}
-        <circle cx="4.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="10" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="15.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="4.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="10" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="15.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="4.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="10" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
-        <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="4.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="10" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="15.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="4.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="10" cy="10" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="15.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="4.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="10" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
+        <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.7" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
-      <rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.35" />
+      <rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.4" />
     </svg>
   );
 }
@@ -309,7 +305,7 @@ export default function Dashboard({
 
   return (
     <div
-      className="h-full overflow-y-auto bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col select-none"
+      className="h-full overflow-y-auto bg-[var(--bg-app)] text-[var(--text-primary)] flex flex-col select-none"
       onClick={() => {
         if (confirmDeleteId) setConfirmDeleteId(null);
       }}
@@ -325,10 +321,10 @@ export default function Dashboard({
       {/* Unified Top Command & Creation Bar */}
       <header
         data-tauri-drag-region
-        className="sticky top-0 z-30 px-4 md:px-6 py-2.5 bg-white dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 shadow-2xs"
+        className="sticky top-0 z-30 px-4 md:px-6 py-2.5 bg-[var(--bg-panel)] border-b border-[var(--border-color)] flex flex-wrap items-center justify-between gap-3 shadow-2xs"
       >
         {/* Left: Segmented Filter Tabs */}
-        <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700">
+        <div className="flex items-center p-0.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
           {[
             { id: "all", label: "All", count: localBoards.length },
             { id: "notebook", label: "Notebooks", count: notebookCount },
@@ -341,14 +337,14 @@ export default function Dashboard({
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
                   active
-                    ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
-                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+                    ? "bg-[var(--bg-panel)] text-[var(--text-primary)] shadow-2xs font-semibold"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] font-mono tabular-nums ${
-                    active ? "text-neutral-600 dark:text-neutral-400 font-bold" : "text-neutral-400"
+                    active ? "text-[var(--text-primary)] font-bold" : "text-[var(--text-muted)]"
                   }`}
                 >
                   {tab.count}
@@ -361,10 +357,10 @@ export default function Dashboard({
         {/* Center: Interactive Creation Studio Dock */}
         <div
           ref={popoverRef}
-          className="relative flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 gap-1.5"
+          className="relative flex items-center p-1 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] gap-1.5"
         >
           {/* Notebook Split-Capsule: Theme-Governed Create + Closeup Macro Paper Swatches */}
-          <div className="flex items-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 p-0.5 shadow-2xs">
+          <div className="flex items-center bg-[var(--bg-panel)] rounded-lg border border-[var(--border-color)] p-0.5 shadow-2xs">
             <button
               onClick={() => handleCreateBoard("notebook", undefined, selectedPaper, selectedLayout)}
               className="h-7.5 px-3 rounded-md bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border border-[var(--btn-primary-border)] text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all shadow-2xs"
@@ -375,7 +371,7 @@ export default function Dashboard({
             </button>
 
             {/* Close-Up Macro Paper Ruling Swatches */}
-            <div className="flex items-center gap-1 px-1.5 border-l border-neutral-300 dark:border-neutral-700 ml-1.5">
+            <div className="flex items-center gap-1 px-1.5 border-l border-[var(--border-color)] ml-1.5">
               {PAPER_SWATCHES.map((s) => {
                 const isSelected = selectedPaper === s.id;
                 return (
@@ -386,8 +382,8 @@ export default function Dashboard({
                     title={`${s.label} paper`}
                     className={`w-7 h-7.5 rounded-md flex items-center justify-center transition-all ${
                       isSelected
-                        ? "bg-neutral-200/90 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 ring-2 ring-neutral-900 dark:ring-neutral-100 shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        ? "bg-[var(--bg-subtle)] text-[var(--text-primary)] ring-2 ring-[var(--text-primary)] shadow-xs"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                     }`}
                   >
                     <MacroPaperGraphic style={s.id} />
@@ -400,8 +396,8 @@ export default function Dashboard({
             <button
               type="button"
               onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-              className={`w-6 h-7.5 rounded flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
-                isPopoverOpen ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100" : ""
+              className={`w-6 h-7.5 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors ${
+                isPopoverOpen ? "bg-[var(--bg-subtle)] text-[var(--text-primary)]" : ""
               }`}
               title="Notebook layout & title options"
             >
@@ -412,30 +408,30 @@ export default function Dashboard({
           {/* 1-Tap Infinite Canvas */}
           <button
             onClick={() => handleCreateBoard("infinite")}
-            className="h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
+            className="h-8 px-3 rounded-lg hover:bg-[var(--bg-panel)] text-[var(--text-primary)] text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
             title="New Infinite Canvas"
           >
-            <Plus size={13} className="text-neutral-500" />
+            <Plus size={13} className="text-[var(--text-muted)]" />
             <span>Canvas</span>
           </button>
 
-          <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-700" />
+          <div className="w-px h-4 bg-[var(--border-color)]" />
 
           {/* 1-Tap PDF / .wnb Import */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
+            className="h-8 px-3 rounded-lg hover:bg-[var(--bg-panel)] text-[var(--text-primary)] text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
             title="Import PDF or .wnb file"
           >
-            <FileUp size={13} className="text-neutral-500" />
+            <FileUp size={13} className="text-[var(--text-muted)]" />
             <span>Import</span>
           </button>
 
           {/* Anchored Popover for Title & Page Layout */}
           {isPopoverOpen && (
-            <div className="absolute top-full mt-2 left-0 w-72 p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 shadow-xl z-50 space-y-3 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute top-full mt-2 left-0 w-72 p-3.5 rounded-xl bg-[var(--bg-panel)] border border-[var(--border-color)] shadow-xl z-50 space-y-3 animate-in fade-in zoom-in-95 duration-100">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
                   Notebook Title
                 </label>
                 <input
@@ -449,12 +445,12 @@ export default function Dashboard({
                     }
                   }}
                   autoFocus
-                  className="w-full h-8 px-2.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-500"
+                  className="w-full h-8 px-2.5 text-xs rounded-lg border border-[var(--border-color)] bg-[var(--bg-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-secondary)]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
                   Paper Ruling
                 </label>
                 <div className="grid grid-cols-4 gap-1">
@@ -465,8 +461,8 @@ export default function Dashboard({
                       onClick={() => setSelectedPaper(p.id)}
                       className={`h-8 rounded-lg border text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
                         selectedPaper === p.id
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-semibold"
-                          : "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          ? "border-[var(--text-primary)] bg-[var(--bg-subtle)] text-[var(--text-primary)] font-semibold shadow-2xs"
+                          : "border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
                       }`}
                     >
                       <MacroPaperGraphic style={p.id} />
@@ -477,7 +473,7 @@ export default function Dashboard({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)]">
                   Page Layout (Pre-creates pages)
                 </label>
                 <div className="grid grid-cols-2 gap-1">
@@ -488,8 +484,8 @@ export default function Dashboard({
                       onClick={() => setSelectedLayout(l.id)}
                       className={`h-7 px-2 rounded-lg border text-[11px] font-medium transition-colors ${
                         selectedLayout === l.id
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-semibold"
-                          : "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          ? "border-[var(--text-primary)] bg-[var(--bg-subtle)] text-[var(--text-primary)] font-semibold shadow-2xs"
+                          : "border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
                       }`}
                     >
                       {l.label}
@@ -512,8 +508,8 @@ export default function Dashboard({
         {/* Right: Search, Batch Select, Settings */}
         <div className="flex items-center gap-1.5">
           {isSearchOpen ? (
-            <div className="flex items-center h-9 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 gap-1.5">
-              <Search size={13} className="text-neutral-500 shrink-0" />
+            <div className="flex items-center h-9 px-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] gap-1.5">
+              <Search size={13} className="text-[var(--text-muted)] shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -526,14 +522,14 @@ export default function Dashboard({
                     setIsSearchOpen(false);
                   }
                 }}
-                className="w-28 sm:w-36 bg-transparent text-xs outline-none text-neutral-900 dark:text-neutral-100"
+                className="w-28 sm:w-36 bg-transparent text-xs outline-none text-[var(--text-primary)]"
               />
               <button
                 onClick={() => {
                   setSearchQuery("");
                   setIsSearchOpen(false);
                 }}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
                 <X size={13} />
               </button>
@@ -541,7 +537,7 @@ export default function Dashboard({
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors border border-[var(--border-color)]"
               title="Search"
             >
               <Search size={15} />
@@ -553,7 +549,7 @@ export default function Dashboard({
               {isSelectMode && selectedIds.size > 0 && (
                 <button
                   onClick={handleBatchDelete}
-                  className="h-9 px-3 rounded-xl bg-red-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-red-700 transition-colors"
+                  className="h-9 px-3 rounded-xl bg-red-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-red-700 transition-colors shadow-xs"
                 >
                   <Trash2 size={13} />
                   <span>Delete ({selectedIds.size})</span>
@@ -564,10 +560,10 @@ export default function Dashboard({
                   setIsSelectMode(!isSelectMode);
                   setSelectedIds(new Set());
                 }}
-                className={`h-9 px-2.5 rounded-xl text-xs font-medium transition-colors ${
+                className={`h-9 px-3 rounded-xl text-xs font-medium transition-all ${
                   isSelectMode
-                    ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900"
-                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    ? "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border border-[var(--btn-primary-border)] shadow-xs font-semibold"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] border border-[var(--border-color)]"
                 }`}
                 title="Select multiple boards"
               >
@@ -578,7 +574,7 @@ export default function Dashboard({
 
           <button
             onClick={onOpenSettings}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors border border-[var(--border-color)]"
             title="Settings"
           >
             <SettingsIcon size={16} />
@@ -589,14 +585,14 @@ export default function Dashboard({
       {/* Main Workspace Grid */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-5 md:p-6 space-y-4">
         {loadingMsg && (
-          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-neutral-500 animate-ping" />
+          <div className="px-3.5 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs font-mono text-[var(--text-primary)] flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[var(--text-muted)] animate-ping" />
             <span>{loadingMsg}</span>
           </div>
         )}
 
         {error && (
-          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs text-red-600 dark:text-red-400 flex items-center justify-between">
+          <div className="px-3.5 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-red-400 text-xs text-red-600 dark:text-red-400 flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError("")}>
               <X size={14} />
@@ -605,8 +601,8 @@ export default function Dashboard({
         )}
 
         {filteredBoards.length === 0 ? (
-          <div className="py-20 text-center rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 p-6">
-            <p className="text-xs font-mono text-neutral-500">
+          <div className="py-20 text-center rounded-xl border border-dashed border-[var(--border-color)] p-6">
+            <p className="text-xs font-mono text-[var(--text-muted)]">
               {searchQuery ? "No matching boards" : "Empty workspace"}
             </p>
           </div>
@@ -634,10 +630,10 @@ export default function Dashboard({
                       pageLayout: b.pageLayout,
                     });
                   }}
-                  className={`group relative p-2.5 rounded-xl bg-white dark:bg-neutral-900 border shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`group relative p-2.5 rounded-xl bg-[var(--bg-panel)] border border-[var(--border-color)] shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? "border-neutral-900 dark:border-neutral-100 ring-2 ring-neutral-900 dark:ring-neutral-100"
-                      : "border-neutral-300 dark:border-neutral-700 hover:border-neutral-500 dark:hover:border-neutral-500 hover:shadow-sm"
+                      ? "ring-2 ring-[var(--text-primary)]"
+                      : "hover:border-[var(--text-secondary)] hover:shadow-sm"
                   }`}
                 >
                   {/* Multi-select Checkbox Overlay */}
@@ -645,45 +641,42 @@ export default function Dashboard({
                     <div
                       className={`absolute top-4 right-4 z-20 w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
                         isSelected
-                          ? "bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 text-white dark:text-neutral-900"
-                          : "bg-white/90 dark:bg-neutral-900/90 border-neutral-400 dark:border-neutral-500"
+                          ? "bg-[var(--btn-primary-bg)] border-[var(--btn-primary-border)] text-[var(--btn-primary-text)]"
+                          : "bg-white/90 border-neutral-400 text-neutral-800"
                       }`}
                     >
                       {isSelected && <Check size={13} strokeWidth={2.5} />}
                     </div>
                   )}
 
-                  {/* Document / Canvas Preview with Crisp Outer Border */}
-                  <div className="w-full h-44 rounded-lg bg-neutral-100/90 dark:bg-neutral-800/60 border border-neutral-300/80 dark:border-neutral-700/90 p-2.5 flex items-center justify-center mb-2.5 relative overflow-hidden">
+                  {/* Document / Canvas Preview Pegged to Bright Paper Theme */}
+                  <div className="w-full h-44 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] p-2.5 flex items-center justify-center mb-2.5 relative overflow-hidden">
                     {b.mode === "notebook" ? (
                       <div className="relative h-full aspect-[800/1130] flex items-center justify-center">
                         {b.pageCount && b.pageCount > 1 ? (
-                          <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-[2px] bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-400/60 dark:border-neutral-600/60 -z-10 shadow-2xs" />
+                          <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-[2px] bg-neutral-200 border border-neutral-300 -z-10 shadow-2xs" />
                         ) : null}
                         {b.pageCount && b.pageCount > 2 ? (
-                          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-[2px] bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-400/40 dark:border-neutral-600/30 -z-20" />
+                          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-[2px] bg-neutral-300/80 border border-neutral-400/60 -z-20" />
                         ) : null}
 
-                        <div
-                          className="w-full h-full rounded-[2px] border border-neutral-300 dark:border-neutral-700 shadow-xs overflow-hidden flex items-center justify-center relative"
-                          style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
-                        >
+                        <div className="w-full h-full rounded-[2px] bg-white border border-[#cbd5e1] shadow-xs overflow-hidden flex items-center justify-center relative">
                           {thumb ? (
                             <img
                               src={thumb}
                               alt={b.title}
-                              className="w-full h-full object-contain pointer-events-none select-none"
+                              className="w-full h-full object-contain pointer-events-none select-none rounded-[2px]"
                             />
                           ) : (
-                            <div className="w-full h-full relative overflow-hidden">
+                            <div className="w-full h-full relative overflow-hidden bg-white">
                               {b.paperStyle === "lined" && (
                                 <div className="w-full h-full relative pointer-events-none">
-                                  <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/50" />
+                                  <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/60" />
                                   <div
                                     className="w-full h-full"
                                     style={{
                                       backgroundImage:
-                                        "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.35) 90%)",
+                                        "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.4) 90%)",
                                       backgroundSize: "100% 9px",
                                     }}
                                   />
@@ -694,7 +687,7 @@ export default function Dashboard({
                                   className="w-full h-full pointer-events-none"
                                   style={{
                                     backgroundImage:
-                                      "linear-gradient(to right, rgba(148, 163, 184, 0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
+                                      "linear-gradient(to right, rgba(148, 163, 184, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.35) 1px, transparent 1px)",
                                     backgroundSize: "9px 9px",
                                   }}
                                 />
@@ -704,7 +697,7 @@ export default function Dashboard({
                                   className="w-full h-full pointer-events-none"
                                   style={{
                                     backgroundImage:
-                                      "radial-gradient(rgba(148, 163, 184, 0.5) 1px, transparent 1px)",
+                                      "radial-gradient(rgba(148, 163, 184, 0.6) 1px, transparent 1px)",
                                     backgroundSize: "8px 8px",
                                   }}
                                 />
@@ -714,10 +707,7 @@ export default function Dashboard({
                         </div>
                       </div>
                     ) : (
-                      <div
-                        className="w-full h-full rounded-md border border-neutral-300 dark:border-neutral-700 shadow-xs overflow-hidden flex items-center justify-center relative"
-                        style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
-                      >
+                      <div className="w-full h-full rounded-md bg-white border border-[#cbd5e1] shadow-xs overflow-hidden flex items-center justify-center relative">
                         {thumb ? (
                           <img
                             src={thumb}
@@ -726,10 +716,10 @@ export default function Dashboard({
                           />
                         ) : (
                           <div
-                            className="w-full h-full flex items-center justify-center text-neutral-400 dark:text-neutral-600"
+                            className="w-full h-full flex items-center justify-center text-neutral-400"
                             style={{
                               backgroundImage:
-                                "radial-gradient(rgba(148, 163, 184, 0.4) 1px, transparent 1px)",
+                                "radial-gradient(rgba(148, 163, 184, 0.5) 1px, transparent 1px)",
                               backgroundSize: "10px 10px",
                             }}
                           >
@@ -755,11 +745,11 @@ export default function Dashboard({
                             if (e.key === "Escape") setEditingBoardId(null);
                           }}
                           autoFocus
-                          className="w-full px-1.5 py-0.5 text-xs font-semibold rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-400 dark:border-neutral-600 outline-none"
+                          className="w-full px-1.5 py-0.5 text-xs font-semibold rounded bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--text-primary)] outline-none"
                         />
                       ) : (
                         <div className="flex items-center gap-1 min-w-0 flex-1">
-                          <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                          <h4 className="text-xs font-semibold text-[var(--text-primary)] truncate">
                             {b.title}
                           </h4>
                           <button
@@ -769,7 +759,7 @@ export default function Dashboard({
                               setEditingBoardId(b.id);
                               setEditingTitle(b.title);
                             }}
-                            className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                             title="Rename"
                           >
                             <Edit2 size={11} />
@@ -778,7 +768,7 @@ export default function Dashboard({
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono">
+                    <div className="flex items-center justify-between text-[11px] text-[var(--text-secondary)] font-mono">
                       <div className="flex items-center gap-1.5 truncate">
                         <span>
                           {new Date(b.updatedAt).toLocaleDateString(undefined, {
@@ -803,7 +793,7 @@ export default function Dashboard({
                           className={`h-6 px-1.5 rounded flex items-center gap-1 text-[10px] font-sans font-medium transition-colors ${
                             isConfirmingDelete
                               ? "bg-red-600 text-white"
-                              : "text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                              : "text-[var(--text-muted)] hover:text-red-500 hover:bg-[var(--bg-subtle)]"
                           }`}
                           title={isConfirmingDelete ? "Tap again to delete" : "Delete"}
                         >

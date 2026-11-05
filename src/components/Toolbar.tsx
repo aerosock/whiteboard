@@ -24,13 +24,13 @@ interface ToolbarProps {
 }
 
 const PRESET_COLORS = [
-  "#171717", // Ink black
-  "#e11d48", // Crimson
-  "#2563eb", // Cobalt blue
-  "#16a34a", // Forest green
-  "#d97706", // Ochre
-  "#7c3aed", // Violet
-  "#ffffff", // White
+  "#1e242b", // Ink black / deep slate
+  "#d03b4d", // Terracotta crimson
+  "#2d5fb2", // Classic cobalt blue
+  "#2e7d4e", // Sage / pine green
+  "#c47116", // Warm amber ochre
+  "#6d459b", // Dusky plum violet
+  "#f8fafc", // Clean chalk white
 ];
 
 const STROKE_PRESETS = [
