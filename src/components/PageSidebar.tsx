@@ -205,12 +205,12 @@ export default function PageSidebar({
 
   return (
     <aside
-      className="w-64 h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col z-30 select-none animate-in slide-in-from-left duration-150 flex-shrink-0"
+      className="w-64 h-full bg-white dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 flex flex-col z-30 select-none animate-in slide-in-from-left duration-150 flex-shrink-0"
       onContextMenu={handleContainerContextMenu}
       style={{ userSelect: "none", WebkitUserSelect: "none" }}
     >
       {/* Sidebar Header */}
-      <div className="p-3 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+      <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText size={15} className="text-neutral-500" />
           <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
@@ -299,13 +299,13 @@ export default function PageSidebar({
                   isDraggingThis ? "opacity-35 scale-95 border-dashed border-neutral-400" : ""
                 } ${
                   isSelected
-                    ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800/80 shadow-xs"
-                    : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-800/40"
+                    ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800/80 shadow-xs ring-1 ring-neutral-900 dark:ring-neutral-100"
+                    : "border-neutral-300 dark:border-neutral-800 hover:border-neutral-500 dark:hover:border-neutral-600 bg-neutral-100/50 dark:bg-neutral-800/40"
                 }`}
                 style={{ userSelect: "none", WebkitUserSelect: "none" }}
               >
                 {/* Thumbnail Container */}
-                <div className="w-full aspect-[1/1.414] rounded-md border border-neutral-200 dark:border-neutral-700 overflow-hidden relative shadow-2xs" style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}>
+                <div className="w-full aspect-[1/1.414] rounded-md border border-neutral-300 dark:border-neutral-700 overflow-hidden relative shadow-2xs" style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}>
                   {thumbSrc ? (
                     <img
                       src={thumbSrc}

@@ -102,24 +102,24 @@ export interface ThemePalette {
 export function getThemeColors(t: EffectiveTheme): ThemePalette {
   if (t === "warm") {
     return {
-      deskBg: "#e4debf",
-      paperBg: "#fdfcf0",
-      paperBorder: "#d4cdad",
-      lineColor: "#998f6d",
-      gridColor: "#b5ab8b",
-      dotColor: "#998f6d",
-      marginRed: "#b83232",
-      pageLabel: "#746a48",
-      shadowAlpha1: "rgba(60, 50, 20, 0.14)",
-      shadowAlpha2: "rgba(60, 50, 20, 0.06)",
-      spineShadow: "rgba(60, 50, 20, 0.16)",
+      deskBg: "#e3dbcd",
+      paperBg: "#fcf9f2",
+      paperBorder: "#c5b9a7",
+      lineColor: "#a39380",
+      gridColor: "#c2b4a2",
+      dotColor: "#9e8e7a",
+      marginRed: "#c2413a",
+      pageLabel: "#635342",
+      shadowAlpha1: "rgba(50, 35, 15, 0.16)",
+      shadowAlpha2: "rgba(50, 35, 15, 0.08)",
+      spineShadow: "rgba(50, 35, 15, 0.20)",
     };
   }
   if (t === "charcoal") {
     return {
-      deskBg: "#141720",
-      paperBg: "#232836",
-      paperBorder: "#353f54",
+      deskBg: "#0f131a",
+      paperBg: "#222a3a",
+      paperBorder: "#3b465c",
       lineColor: "#546382",
       gridColor: "#414e69",
       dotColor: "#627294",
@@ -133,9 +133,9 @@ export function getThemeColors(t: EffectiveTheme): ThemePalette {
   if (t === "dark") {
     return {
       deskBg: "#050507",
-      paperBg: "#16161a",
-      paperBorder: "#27272e",
-      lineColor: "#444452",
+      paperBg: "#18181d",
+      paperBorder: "#363640",
+      lineColor: "#484856",
       gridColor: "#33333e",
       dotColor: "#555566",
       marginRed: "#ef4444",
@@ -147,17 +147,17 @@ export function getThemeColors(t: EffectiveTheme): ThemePalette {
   }
   // Default "light"
   return {
-    deskBg: "#e8edf2",
+    deskBg: "#dfe4ec",
     paperBg: "#ffffff",
-    paperBorder: "#cbd5e1",
+    paperBorder: "#c4cdd8",
     lineColor: "#94a3b8",
     gridColor: "#cbd5e1",
     dotColor: "#94a3b8",
     marginRed: "#ef4444",
-    pageLabel: "#64748b",
-    shadowAlpha1: "rgba(0, 0, 0, 0.08)",
-    shadowAlpha2: "rgba(0, 0, 0, 0.04)",
-    spineShadow: "rgba(0, 0, 0, 0.12)",
+    pageLabel: "#475569",
+    shadowAlpha1: "rgba(0, 0, 0, 0.12)",
+    shadowAlpha2: "rgba(0, 0, 0, 0.06)",
+    spineShadow: "rgba(0, 0, 0, 0.16)",
   };
 }
 

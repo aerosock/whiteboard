@@ -67,7 +67,7 @@ export default function AppMenu({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1.5 w-60 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl py-1.5 text-xs text-neutral-700 dark:text-neutral-300 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 top-full mt-1.5 w-64 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 shadow-2xl py-1.5 text-xs text-neutral-800 dark:text-neutral-200 z-[100] animate-in fade-in zoom-in-95 duration-100">
           {/* Dashboard */}
           <button
             onClick={() => {

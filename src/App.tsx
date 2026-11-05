@@ -3,7 +3,7 @@ import Canvas, { CanvasHandle } from "./components/Canvas";
 import Toolbar from "./components/Toolbar";
 import BoardHeader from "./components/BoardHeader";
 import PageSidebar from "./components/PageSidebar";
-import Dashboard from "./components/Dashboard";
+import Dashboard, { MIN_PAGES_FOR_LAYOUT } from "./components/Dashboard";
 import SettingsModal from "./components/SettingsModal";
 import { useTheme } from "./hooks/useTheme";
 import {
@@ -62,8 +62,9 @@ function App() {
     const local = getLocalBoard(board.id);
     const mode = local ? local.mode : board.mode || "infinite";
     const paper = local ? local.paperStyle : mode === "notebook" ? "lined" : "dots";
-    const pages = local ? local.pageCount : 1;
     const layout = local?.pageLayout || board.pageLayout || "single";
+    const minPages = MIN_PAGES_FOR_LAYOUT[layout] || 1;
+    const pages = Math.max(local ? local.pageCount : 1, minPages);
     const bgs = local?.pageBackgrounds || {};
     const clamp = local?.clampToPages !== undefined ? local.clampToPages : true;
 
@@ -129,8 +130,15 @@ function App() {
   }
 
   function handlePageLayoutChange(newLayout: PageLayout) {
+    const minPages = MIN_PAGES_FOR_LAYOUT[newLayout] || 1;
+    const nextCount = Math.max(pageCount, minPages);
+    if (nextCount !== pageCount) {
+      setPageCount(nextCount);
+      saveBoardMeta({ pageLayout: newLayout, pageCount: nextCount });
+    } else {
+      saveBoardMeta({ pageLayout: newLayout });
+    }
     setPageLayout(newLayout);
-    saveBoardMeta({ pageLayout: newLayout });
   }
 
   function handleAddPage() {
@@ -496,44 +504,48 @@ function App() {
         />
       ) : (
         <div className="h-full w-full flex flex-col overflow-hidden">
-          <BoardHeader
-            title={activeBoard?.title || "Whiteboard"}
-            onTitleChange={handleTitleChange}
-            boardMode={boardMode}
-            onBoardModeChange={handleBoardModeChange}
-            paperStyle={paperStyle}
-            onPaperStyleChange={handlePaperStyleChange}
-            currentPage={currentPage}
-            pageCount={pageCount}
-            onSelectPage={(pageNum) => {
-              setCurrentPage(pageNum);
-              canvasRef.current?.focusPage(pageNum);
-            }}
-            onAddPage={handleAddPage}
-            pageLayout={pageLayout}
-            onPageLayoutChange={handlePageLayoutChange}
-            isSidebarOpen={isSidebarOpen}
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            onBackToDashboard={handleBackToDashboard}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            onClearCanvas={() => canvasRef.current?.clear()}
-            onExportPng={handleExportPng}
-            onExportWnb={handleExportWnb}
-            onImportPdf={handleImportPdf}
-          />
-          <Toolbar
-            tool={tool}
-            setTool={setTool}
-            color={color}
-            setColor={setColor}
-            strokeWidth={strokeWidth}
-            setStrokeWidth={setStrokeWidth}
-            onUndo={() => canvasRef.current?.undo()}
-            onRedo={() => canvasRef.current?.redo()}
-            onClear={() => canvasRef.current?.clear()}
-            onInsertImage={handleInsertImage}
-          />
-          <div className="flex-1 flex overflow-hidden relative">
+          <div className="relative z-50">
+            <BoardHeader
+              title={activeBoard?.title || "Whiteboard"}
+              onTitleChange={handleTitleChange}
+              boardMode={boardMode}
+              onBoardModeChange={handleBoardModeChange}
+              paperStyle={paperStyle}
+              onPaperStyleChange={handlePaperStyleChange}
+              currentPage={currentPage}
+              pageCount={pageCount}
+              onSelectPage={(pageNum) => {
+                setCurrentPage(pageNum);
+                canvasRef.current?.focusPage(pageNum);
+              }}
+              onAddPage={handleAddPage}
+              pageLayout={pageLayout}
+              onPageLayoutChange={handlePageLayoutChange}
+              isSidebarOpen={isSidebarOpen}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              onBackToDashboard={handleBackToDashboard}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              onClearCanvas={() => canvasRef.current?.clear()}
+              onExportPng={handleExportPng}
+              onExportWnb={handleExportWnb}
+              onImportPdf={handleImportPdf}
+            />
+          </div>
+          <div className="relative z-40">
+            <Toolbar
+              tool={tool}
+              setTool={setTool}
+              color={color}
+              setColor={setColor}
+              strokeWidth={strokeWidth}
+              setStrokeWidth={setStrokeWidth}
+              onUndo={() => canvasRef.current?.undo()}
+              onRedo={() => canvasRef.current?.redo()}
+              onClear={() => canvasRef.current?.clear()}
+              onInsertImage={handleInsertImage}
+            />
+          </div>
+          <div className="flex-1 flex overflow-hidden relative z-10">
             {boardMode === "notebook" && (
               <PageSidebar
                 isOpen={isSidebarOpen}

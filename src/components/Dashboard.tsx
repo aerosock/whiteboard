@@ -46,48 +46,59 @@ const LAYOUT_PRESETS: { id: PageLayout; label: string }[] = [
   { id: "grid-4", label: "2×2 Grid" },
 ];
 
-function MiniPaperGraphic({ style }: { style: PaperStyle }) {
+export const MIN_PAGES_FOR_LAYOUT: Record<PageLayout, number> = {
+  single: 1,
+  double: 2,
+  horizontal: 2,
+  "grid-3": 3,
+  "grid-4": 4,
+  "grid-6": 6,
+};
+
+function MacroPaperGraphic({ style }: { style: PaperStyle }) {
   if (style === "lined") {
     return (
-      <span className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 relative overflow-hidden block shrink-0">
-        <span className="absolute inset-y-0 left-[3px] w-px bg-red-400/60" />
-        <span
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(to bottom, transparent 3px, rgba(148, 163, 184, 0.55) 3px, rgba(148, 163, 184, 0.55) 4px, transparent 4px)",
-            backgroundSize: "100% 4px",
-          }}
-        />
-      </span>
+      <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
+        {/* Red margin line on left */}
+        <line x1="5.5" y1="2" x2="5.5" y2="18" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Close-up ruled lines */}
+        <line x1="2" y1="5.5" x2="18" y2="5.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="2" y1="10.5" x2="18" y2="10.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="2" y1="15.5" x2="18" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+      </svg>
     );
   }
   if (style === "grid") {
     return (
-      <span
-        className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(148, 163, 184, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.45) 1px, transparent 1px)",
-          backgroundSize: "4px 4px",
-        }}
-      />
+      <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
+        {/* 2x2 close-up graph grid cells */}
+        <line x1="6.5" y1="2" x2="6.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="13.5" y1="2" x2="13.5" y2="18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="2" y1="6.5" x2="18" y2="6.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <line x1="2" y1="13.5" x2="18" y2="13.5" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" strokeLinecap="round" />
+      </svg>
     );
   }
   if (style === "dots") {
     return (
-      <span
-        className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(148, 163, 184, 0.7) 0.75px, transparent 0.75px)",
-          backgroundSize: "3.5px 3.5px",
-        }}
-      />
+      <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
+        {/* 3x3 close-up bullet journal dots */}
+        <circle cx="4.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="10" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="15.5" cy="4.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="4.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="10" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="15.5" cy="10" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="4.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="10" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+        <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" fillOpacity="0.65" />
+      </svg>
     );
   }
   return (
-    <span className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0" />
+    <svg viewBox="0 0 20 20" className="w-5 h-5 pointer-events-none select-none">
+      <rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.35" />
+    </svg>
   );
 }
 
@@ -146,6 +157,8 @@ export default function Dashboard({
   ) {
     const defaultTitle = mode === "notebook" ? "Untitled Notebook" : "Untitled Canvas";
     const finalTitle = title?.trim() || defaultTitle;
+    const finalLayout = layout || selectedLayout;
+    const minPages = mode === "notebook" ? (MIN_PAGES_FOR_LAYOUT[finalLayout] || 1) : 1;
     const id = "b_" + Math.random().toString(36).slice(2, 10);
 
     const newBoard: LocalBoard = {
@@ -153,8 +166,8 @@ export default function Dashboard({
       title: finalTitle,
       mode,
       paperStyle: paper || (mode === "notebook" ? selectedPaper : "dots"),
-      pageCount: 1,
-      pageLayout: layout || selectedLayout,
+      pageCount: minPages,
+      pageLayout: finalLayout,
       clampToPages: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -312,10 +325,10 @@ export default function Dashboard({
       {/* Unified Top Command & Creation Bar */}
       <header
         data-tauri-drag-region
-        className="sticky top-0 z-30 px-4 md:px-6 py-2.5 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xs border-b border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3"
+        className="sticky top-0 z-30 px-4 md:px-6 py-2.5 bg-white dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 shadow-2xs"
       >
         {/* Left: Segmented Filter Tabs */}
-        <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60">
+        <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700">
           {[
             { id: "all", label: "All", count: localBoards.length },
             { id: "notebook", label: "Notebooks", count: notebookCount },
@@ -328,14 +341,14 @@ export default function Dashboard({
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
                   active
-                    ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-2xs"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                    ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] font-mono tabular-nums ${
-                    active ? "text-neutral-500 dark:text-neutral-400" : "text-neutral-400/80"
+                    active ? "text-neutral-600 dark:text-neutral-400 font-bold" : "text-neutral-400"
                   }`}
                 >
                   {tab.count}
@@ -348,21 +361,21 @@ export default function Dashboard({
         {/* Center: Interactive Creation Studio Dock */}
         <div
           ref={popoverRef}
-          className="relative flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/70 gap-1"
+          className="relative flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 gap-1.5"
         >
-          {/* Notebook Split-Capsule: Instant Create + Live Paper Swatches */}
-          <div className="flex items-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200/90 dark:border-neutral-700/80 p-0.5 shadow-2xs">
+          {/* Notebook Split-Capsule: Theme-Governed Create + Closeup Macro Paper Swatches */}
+          <div className="flex items-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 p-0.5 shadow-2xs">
             <button
               onClick={() => handleCreateBoard("notebook", undefined, selectedPaper, selectedLayout)}
-              className="h-7 px-2.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium flex items-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all"
+              className="h-7.5 px-3 rounded-md bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border border-[var(--btn-primary-border)] text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all shadow-2xs"
               title={`Create ${selectedPaper} notebook`}
             >
-              <Plus size={13} strokeWidth={2.5} />
+              <Plus size={14} strokeWidth={2.5} />
               <span>Notebook</span>
             </button>
 
-            {/* Tactile Mini Paper Ruling Swatches */}
-            <div className="flex items-center gap-0.5 px-1 border-l border-neutral-200 dark:border-neutral-800 ml-1">
+            {/* Close-Up Macro Paper Ruling Swatches */}
+            <div className="flex items-center gap-1 px-1.5 border-l border-neutral-300 dark:border-neutral-700 ml-1.5">
               {PAPER_SWATCHES.map((s) => {
                 const isSelected = selectedPaper === s.id;
                 return (
@@ -371,13 +384,13 @@ export default function Dashboard({
                     type="button"
                     onClick={() => setSelectedPaper(s.id)}
                     title={`${s.label} paper`}
-                    className={`w-6 h-7 rounded flex items-center justify-center transition-all ${
+                    className={`w-7 h-7.5 rounded-md flex items-center justify-center transition-all ${
                       isSelected
-                        ? "bg-neutral-200/80 dark:bg-neutral-800 ring-1 ring-neutral-400 dark:ring-neutral-500"
-                        : "opacity-60 hover:opacity-100 hover:bg-neutral-100 dark:hover:bg-neutral-800/50"
+                        ? "bg-neutral-200/90 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 ring-2 ring-neutral-900 dark:ring-neutral-100 shadow-xs"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     }`}
                   >
-                    <MiniPaperGraphic style={s.id} />
+                    <MacroPaperGraphic style={s.id} />
                   </button>
                 );
               })}
@@ -387,12 +400,12 @@ export default function Dashboard({
             <button
               type="button"
               onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-              className={`w-6 h-7 rounded flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
+              className={`w-6 h-7.5 rounded flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
                 isPopoverOpen ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100" : ""
               }`}
               title="Notebook layout & title options"
             >
-              <ChevronDown size={13} />
+              <ChevronDown size={14} />
             </button>
           </div>
 
@@ -406,7 +419,7 @@ export default function Dashboard({
             <span>Canvas</span>
           </button>
 
-          <div className="w-px h-4 bg-neutral-300/70 dark:bg-neutral-700" />
+          <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-700" />
 
           {/* 1-Tap PDF / .wnb Import */}
           <button
@@ -420,9 +433,9 @@ export default function Dashboard({
 
           {/* Anchored Popover for Title & Page Layout */}
           {isPopoverOpen && (
-            <div className="absolute top-full mt-2 left-0 w-72 p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl z-50 space-y-3 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute top-full mt-2 left-0 w-72 p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 shadow-xl z-50 space-y-3 animate-in fade-in zoom-in-95 duration-100">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
                   Notebook Title
                 </label>
                 <input
@@ -436,12 +449,12 @@ export default function Dashboard({
                     }
                   }}
                   autoFocus
-                  className="w-full h-8 px-2.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400"
+                  className="w-full h-8 px-2.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-500"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
                   Paper Ruling
                 </label>
                 <div className="grid grid-cols-4 gap-1">
@@ -452,11 +465,11 @@ export default function Dashboard({
                       onClick={() => setSelectedPaper(p.id)}
                       className={`h-8 rounded-lg border text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
                         selectedPaper === p.id
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-semibold"
+                          : "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                       }`}
                     >
-                      <MiniPaperGraphic style={p.id} />
+                      <MacroPaperGraphic style={p.id} />
                       <span>{p.label}</span>
                     </button>
                   ))}
@@ -464,8 +477,8 @@ export default function Dashboard({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
-                  Page Layout
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                  Page Layout (Pre-creates pages)
                 </label>
                 <div className="grid grid-cols-2 gap-1">
                   {LAYOUT_PRESETS.map((l) => (
@@ -475,8 +488,8 @@ export default function Dashboard({
                       onClick={() => setSelectedLayout(l.id)}
                       className={`h-7 px-2 rounded-lg border text-[11px] font-medium transition-colors ${
                         selectedLayout === l.id
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-semibold"
+                          : "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                       }`}
                     >
                       {l.label}
@@ -488,7 +501,7 @@ export default function Dashboard({
               <button
                 type="button"
                 onClick={() => handleCreateBoard("notebook", customTitle, selectedPaper, selectedLayout)}
-                className="w-full h-8 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium hover:opacity-90 transition-opacity"
+                className="w-full h-8 rounded-lg bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border border-[var(--btn-primary-border)] text-xs font-semibold hover:opacity-90 transition-opacity"
               >
                 Create Notebook
               </button>
@@ -500,7 +513,7 @@ export default function Dashboard({
         <div className="flex items-center gap-1.5">
           {isSearchOpen ? (
             <div className="flex items-center h-9 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 gap-1.5">
-              <Search size={13} className="text-neutral-400 shrink-0" />
+              <Search size={13} className="text-neutral-500 shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -528,7 +541,7 @@ export default function Dashboard({
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               title="Search"
             >
               <Search size={15} />
@@ -554,7 +567,7 @@ export default function Dashboard({
                 className={`h-9 px-2.5 rounded-xl text-xs font-medium transition-colors ${
                   isSelectMode
                     ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`}
                 title="Select multiple boards"
               >
@@ -565,7 +578,7 @@ export default function Dashboard({
 
           <button
             onClick={onOpenSettings}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             title="Settings"
           >
             <SettingsIcon size={16} />
@@ -576,7 +589,7 @@ export default function Dashboard({
       {/* Main Workspace Grid */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-5 md:p-6 space-y-4">
         {loadingMsg && (
-          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-mono text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs font-mono text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-neutral-500 animate-ping" />
             <span>{loadingMsg}</span>
           </div>
@@ -592,8 +605,8 @@ export default function Dashboard({
         )}
 
         {filteredBoards.length === 0 ? (
-          <div className="py-20 text-center rounded-xl border border-dashed border-neutral-300/70 dark:border-neutral-800 p-6">
-            <p className="text-xs font-mono text-neutral-400">
+          <div className="py-20 text-center rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 p-6">
+            <p className="text-xs font-mono text-neutral-500">
               {searchQuery ? "No matching boards" : "Empty workspace"}
             </p>
           </div>
@@ -621,10 +634,10 @@ export default function Dashboard({
                       pageLayout: b.pageLayout,
                     });
                   }}
-                  className={`group relative p-2.5 rounded-xl bg-white dark:bg-neutral-900 border transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`group relative p-2.5 rounded-xl bg-white dark:bg-neutral-900 border shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100"
-                      : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+                      ? "border-neutral-900 dark:border-neutral-100 ring-2 ring-neutral-900 dark:ring-neutral-100"
+                      : "border-neutral-300 dark:border-neutral-700 hover:border-neutral-500 dark:hover:border-neutral-500 hover:shadow-sm"
                   }`}
                 >
                   {/* Multi-select Checkbox Overlay */}
@@ -633,26 +646,26 @@ export default function Dashboard({
                       className={`absolute top-4 right-4 z-20 w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
                         isSelected
                           ? "bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 text-white dark:text-neutral-900"
-                          : "bg-white/90 dark:bg-neutral-900/90 border-neutral-300 dark:border-neutral-600"
+                          : "bg-white/90 dark:bg-neutral-900/90 border-neutral-400 dark:border-neutral-500"
                       }`}
                     >
                       {isSelected && <Check size={13} strokeWidth={2.5} />}
                     </div>
                   )}
 
-                  {/* Document / Canvas Preview */}
-                  <div className="w-full h-44 rounded-lg bg-neutral-100/80 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800/80 p-2.5 flex items-center justify-center mb-2.5 relative overflow-hidden">
+                  {/* Document / Canvas Preview with Crisp Outer Border */}
+                  <div className="w-full h-44 rounded-lg bg-neutral-100/90 dark:bg-neutral-800/60 border border-neutral-300/80 dark:border-neutral-700/90 p-2.5 flex items-center justify-center mb-2.5 relative overflow-hidden">
                     {b.mode === "notebook" ? (
                       <div className="relative h-full aspect-[800/1130] flex items-center justify-center">
                         {b.pageCount && b.pageCount > 1 ? (
-                          <div className="absolute inset-0 translate-x-1 translate-y-1 rounded-[2px] bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-300/60 dark:border-neutral-600/50 -z-10" />
+                          <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-[2px] bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-400/60 dark:border-neutral-600/60 -z-10 shadow-2xs" />
                         ) : null}
                         {b.pageCount && b.pageCount > 2 ? (
-                          <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-[2px] bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-300/40 dark:border-neutral-600/20 -z-20" />
+                          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-[2px] bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-400/40 dark:border-neutral-600/30 -z-20" />
                         ) : null}
 
                         <div
-                          className="w-full h-full rounded-[2px] border border-neutral-200/90 dark:border-neutral-700/80 shadow-2xs overflow-hidden flex items-center justify-center relative"
+                          className="w-full h-full rounded-[2px] border border-neutral-300 dark:border-neutral-700 shadow-xs overflow-hidden flex items-center justify-center relative"
                           style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
                         >
                           {thumb ? (
@@ -665,12 +678,12 @@ export default function Dashboard({
                             <div className="w-full h-full relative overflow-hidden">
                               {b.paperStyle === "lined" && (
                                 <div className="w-full h-full relative pointer-events-none">
-                                  <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/35 dark:bg-red-400/25" />
+                                  <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/50" />
                                   <div
                                     className="w-full h-full"
                                     style={{
                                       backgroundImage:
-                                        "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.25) 90%)",
+                                        "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.35) 90%)",
                                       backgroundSize: "100% 9px",
                                     }}
                                   />
@@ -681,7 +694,7 @@ export default function Dashboard({
                                   className="w-full h-full pointer-events-none"
                                   style={{
                                     backgroundImage:
-                                      "linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px)",
+                                      "linear-gradient(to right, rgba(148, 163, 184, 0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
                                     backgroundSize: "9px 9px",
                                   }}
                                 />
@@ -691,7 +704,7 @@ export default function Dashboard({
                                   className="w-full h-full pointer-events-none"
                                   style={{
                                     backgroundImage:
-                                      "radial-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px)",
+                                      "radial-gradient(rgba(148, 163, 184, 0.5) 1px, transparent 1px)",
                                     backgroundSize: "8px 8px",
                                   }}
                                 />
@@ -702,7 +715,7 @@ export default function Dashboard({
                       </div>
                     ) : (
                       <div
-                        className="w-full h-full rounded-md border border-neutral-200/90 dark:border-neutral-700/80 shadow-2xs overflow-hidden flex items-center justify-center relative"
+                        className="w-full h-full rounded-md border border-neutral-300 dark:border-neutral-700 shadow-xs overflow-hidden flex items-center justify-center relative"
                         style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
                       >
                         {thumb ? (
@@ -713,14 +726,14 @@ export default function Dashboard({
                           />
                         ) : (
                           <div
-                            className="w-full h-full flex items-center justify-center text-neutral-300 dark:text-neutral-700"
+                            className="w-full h-full flex items-center justify-center text-neutral-400 dark:text-neutral-600"
                             style={{
                               backgroundImage:
-                                "radial-gradient(rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
+                                "radial-gradient(rgba(148, 163, 184, 0.4) 1px, transparent 1px)",
                               backgroundSize: "10px 10px",
                             }}
                           >
-                            <LayoutGrid size={18} className="opacity-40" />
+                            <LayoutGrid size={18} className="opacity-60" />
                           </div>
                         )}
                       </div>
@@ -742,7 +755,7 @@ export default function Dashboard({
                             if (e.key === "Escape") setEditingBoardId(null);
                           }}
                           autoFocus
-                          className="w-full px-1.5 py-0.5 text-xs font-semibold rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 outline-none"
+                          className="w-full px-1.5 py-0.5 text-xs font-semibold rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-400 dark:border-neutral-600 outline-none"
                         />
                       ) : (
                         <div className="flex items-center gap-1 min-w-0 flex-1">
@@ -765,7 +778,7 @@ export default function Dashboard({
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+                    <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono">
                       <div className="flex items-center gap-1.5 truncate">
                         <span>
                           {new Date(b.updatedAt).toLocaleDateString(undefined, {

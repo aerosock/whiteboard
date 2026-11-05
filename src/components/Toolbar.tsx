@@ -93,9 +93,9 @@ export default function Toolbar({
   const isCustomColor = !PRESET_COLORS.includes(color);
 
   return (
-    <div className="flex items-center justify-center gap-0.5 px-3 py-1.5 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 select-none flex-shrink-0 z-10 overflow-x-auto">
+    <div className="flex items-center justify-center gap-0.5 px-3 py-1.5 bg-white dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-800 select-none flex-shrink-0 z-10 overflow-x-auto shadow-2xs">
       {/* Primary Drawing Tools */}
-      <div className="flex items-center gap-0.5 p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/70 dark:border-neutral-700/60">
+      <div className="flex items-center gap-0.5 p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-300 dark:border-neutral-700">
         <ToolButton
           icon={<Pencil size={iconSize} />}
           active={tool === "pen"}
@@ -176,7 +176,7 @@ export default function Toolbar({
 
       {/* Quick Stroke Thickness Presets + Fine Slider */}
       <div className="flex items-center gap-1.5 px-0.5">
-        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/70 dark:border-neutral-700/60">
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-300 dark:border-neutral-700">
           {STROKE_PRESETS.map((preset) => {
             const active = strokeWidth === preset.size;
             return (
