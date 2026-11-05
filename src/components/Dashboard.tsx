@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Trash2,
-  Clock,
   LayoutGrid,
-  FileText,
   Settings as SettingsIcon,
   FileUp,
   X,
-  BookOpen,
+  Plus,
+  Search,
+  Check,
+  ChevronDown,
+  Edit2,
 } from "lucide-react";
 import {
   BoardMode,
@@ -30,26 +32,111 @@ interface DashboardProps {
   onOpenSettings: () => void;
 }
 
+const PAPER_SWATCHES: { id: PaperStyle; label: string }[] = [
+  { id: "lined", label: "Lined" },
+  { id: "grid", label: "Grid" },
+  { id: "dots", label: "Dots" },
+  { id: "blank", label: "Blank" },
+];
+
+const LAYOUT_PRESETS: { id: PageLayout; label: string }[] = [
+  { id: "single", label: "Single Page" },
+  { id: "double", label: "2-Page Spread" },
+  { id: "horizontal", label: "Horizontal Strip" },
+  { id: "grid-4", label: "2×2 Grid" },
+];
+
+function MiniPaperGraphic({ style }: { style: PaperStyle }) {
+  if (style === "lined") {
+    return (
+      <span className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 relative overflow-hidden block shrink-0">
+        <span className="absolute inset-y-0 left-[3px] w-px bg-red-400/60" />
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(to bottom, transparent 3px, rgba(148, 163, 184, 0.55) 3px, rgba(148, 163, 184, 0.55) 4px, transparent 4px)",
+            backgroundSize: "100% 4px",
+          }}
+        />
+      </span>
+    );
+  }
+  if (style === "grid") {
+    return (
+      <span
+        className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(148, 163, 184, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.45) 1px, transparent 1px)",
+          backgroundSize: "4px 4px",
+        }}
+      />
+    );
+  }
+  if (style === "dots") {
+    return (
+      <span
+        className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(148, 163, 184, 0.7) 0.75px, transparent 0.75px)",
+          backgroundSize: "3.5px 3.5px",
+        }}
+      />
+    );
+  }
+  return (
+    <span className="w-3.5 h-4 rounded-[2px] bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 block shrink-0" />
+  );
+}
+
 export default function Dashboard({
   onOpenBoard,
   onOpenSettings,
 }: DashboardProps) {
   const [localBoards, setLocalBoards] = useState<LocalBoard[]>([]);
   const [activeTab, setActiveTab] = useState<"all" | "notebook" | "infinite">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Unified Create Board Modal state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newBoardMode, setNewBoardMode] = useState<BoardMode>("notebook");
-  const [newBoardTitle, setNewBoardTitle] = useState("");
-  const [newBoardPaper, setNewBoardPaper] = useState<PaperStyle>("lined");
-  const [newBoardLayout, setNewBoardLayout] = useState<PageLayout>("single");
+  // Quick-create dock state
+  const [selectedPaper, setSelectedPaper] = useState<PaperStyle>("lined");
+  const [selectedLayout, setSelectedLayout] = useState<PageLayout>("single");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [customTitle, setCustomTitle] = useState("");
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Card inline actions state
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setLocalBoards(getLocalBoards());
   }, []);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setIsPopoverOpen(false);
+      }
+    }
+    window.addEventListener("pointerdown", handleOutsideClick);
+    return () => window.removeEventListener("pointerdown", handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
 
   function handleCreateBoard(
     mode: BoardMode,
@@ -57,7 +144,7 @@ export default function Dashboard({
     paper?: PaperStyle,
     layout?: PageLayout,
   ) {
-    const defaultTitle = mode === "notebook" ? "Untitled Notebook" : "Untitled Whiteboard";
+    const defaultTitle = mode === "notebook" ? "Untitled Notebook" : "Untitled Canvas";
     const finalTitle = title?.trim() || defaultTitle;
     const id = "b_" + Math.random().toString(36).slice(2, 10);
 
@@ -65,9 +152,9 @@ export default function Dashboard({
       id,
       title: finalTitle,
       mode,
-      paperStyle: paper || (mode === "notebook" ? "lined" : "dots"),
+      paperStyle: paper || (mode === "notebook" ? selectedPaper : "dots"),
       pageCount: 1,
-      pageLayout: layout || "single",
+      pageLayout: layout || selectedLayout,
       clampToPages: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -75,7 +162,8 @@ export default function Dashboard({
 
     saveLocalBoard(newBoard);
     setLocalBoards(getLocalBoards());
-    setIsCreateModalOpen(false);
+    setIsPopoverOpen(false);
+    setCustomTitle("");
 
     onOpenBoard({
       id: newBoard.id,
@@ -90,14 +178,13 @@ export default function Dashboard({
     if (!file) return;
 
     setError("");
-    setLoadingMsg("Importing document...");
+    setLoadingMsg("Importing...");
 
     try {
       if (file.name.endsWith(".pdf") || file.type === "application/pdf") {
-        setLoadingMsg("Rendering PDF pages for markup...");
         const { pageImages, pageCount } = await loadPdfPagesAsImages(
           file,
-          (curr, total) => setLoadingMsg(`Rendering page ${curr} of ${total}...`),
+          (curr, total) => setLoadingMsg(`Page ${curr}/${total}`),
         );
 
         const pageBackgrounds: Record<number, string> = {};
@@ -129,10 +216,8 @@ export default function Dashboard({
           pageLayout: newBoard.pageLayout,
         });
       } else {
-        // .wnb or .json board package
         const imported = await importBoardPackage(file);
         saveLocalBoard(imported.board);
-        // Save elements to localStorage key for this board
         localStorage.setItem(`wb_strokes_${imported.board.id}`, JSON.stringify(imported.strokes));
         localStorage.setItem(`wb_images_${imported.board.id}`, JSON.stringify(imported.images));
         setLocalBoards(getLocalBoards());
@@ -144,16 +229,14 @@ export default function Dashboard({
         });
       }
     } catch (err: any) {
-      setError(err.message || "Failed to import file");
+      setError(err.message || "Import failed");
     } finally {
       setLoadingMsg("");
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
-  function handleDeleteLocal(id: string, e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this board?")) return;
+  function purgeBoardStorage(id: string) {
     deleteLocalBoard(id);
     localStorage.removeItem(`wb_strokes_${id}`);
     localStorage.removeItem(`wb_images_${id}`);
@@ -161,17 +244,63 @@ export default function Dashboard({
     localStorage.removeItem(`wb_redo_${id}`);
     localStorage.removeItem(`wb_cam_${id}`);
     localStorage.removeItem(`wb_thumb_${id}`);
+  }
+
+  function handleDeleteBoard(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+    purgeBoardStorage(id);
+    setConfirmDeleteId(null);
     setLocalBoards(getLocalBoards());
   }
 
+  function handleBatchDelete() {
+    if (selectedIds.size === 0) return;
+    selectedIds.forEach((id) => purgeBoardStorage(id));
+    setSelectedIds(new Set());
+    setIsSelectMode(false);
+    setLocalBoards(getLocalBoards());
+  }
+
+  function toggleSelectBoard(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleCommitRename(board: LocalBoard) {
+    const trimmed = editingTitle.trim();
+    if (trimmed && trimmed !== board.title) {
+      saveLocalBoard({ ...board, title: trimmed, updatedAt: Date.now() });
+      setLocalBoards(getLocalBoards());
+    }
+    setEditingBoardId(null);
+  }
+
+  const notebookCount = localBoards.filter((b) => b.mode === "notebook").length;
+  const infiniteCount = localBoards.filter((b) => b.mode === "infinite").length;
+
   const filteredBoards = localBoards.filter((b) => {
-    if (activeTab === "all") return true;
-    return b.mode === activeTab;
+    if (activeTab !== "all" && b.mode !== activeTab) return false;
+    if (searchQuery.trim()) {
+      return b.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    }
+    return true;
   });
 
   return (
-    <div className="h-full overflow-y-auto bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col">
-      {/* Hidden file input for .wnb / .pdf import */}
+    <div
+      className="h-full overflow-y-auto bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col select-none"
+      onClick={() => {
+        if (confirmDeleteId) setConfirmDeleteId(null);
+      }}
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -180,32 +309,263 @@ export default function Dashboard({
         className="sr-only"
       />
 
-      {/* Header */}
-      <header data-tauri-drag-region className="px-6 py-3 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Whiteboard
-          </span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-            Local-First
-          </span>
+      {/* Unified Top Command & Creation Bar */}
+      <header
+        data-tauri-drag-region
+        className="sticky top-0 z-30 px-4 md:px-6 py-2.5 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xs border-b border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3"
+      >
+        {/* Left: Segmented Filter Tabs */}
+        <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60">
+          {[
+            { id: "all", label: "All", count: localBoards.length },
+            { id: "notebook", label: "Notebooks", count: notebookCount },
+            { id: "infinite", label: "Canvas", count: infiniteCount },
+          ].map((tab) => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                  active
+                    ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-2xs"
+                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10px] font-mono tabular-nums ${
+                    active ? "text-neutral-500 dark:text-neutral-400" : "text-neutral-400/80"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Import File Button */}
+        {/* Center: Interactive Creation Studio Dock */}
+        <div
+          ref={popoverRef}
+          className="relative flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/70 gap-1"
+        >
+          {/* Notebook Split-Capsule: Instant Create + Live Paper Swatches */}
+          <div className="flex items-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200/90 dark:border-neutral-700/80 p-0.5 shadow-2xs">
+            <button
+              onClick={() => handleCreateBoard("notebook", undefined, selectedPaper, selectedLayout)}
+              className="h-7 px-2.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium flex items-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all"
+              title={`Create ${selectedPaper} notebook`}
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              <span>Notebook</span>
+            </button>
+
+            {/* Tactile Mini Paper Ruling Swatches */}
+            <div className="flex items-center gap-0.5 px-1 border-l border-neutral-200 dark:border-neutral-800 ml-1">
+              {PAPER_SWATCHES.map((s) => {
+                const isSelected = selectedPaper === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSelectedPaper(s.id)}
+                    title={`${s.label} paper`}
+                    className={`w-6 h-7 rounded flex items-center justify-center transition-all ${
+                      isSelected
+                        ? "bg-neutral-200/80 dark:bg-neutral-800 ring-1 ring-neutral-400 dark:ring-neutral-500"
+                        : "opacity-60 hover:opacity-100 hover:bg-neutral-100 dark:hover:bg-neutral-800/50"
+                    }`}
+                  >
+                    <MiniPaperGraphic style={s.id} />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Expandable Custom Notebook Setup Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+              className={`w-6 h-7 rounded flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
+                isPopoverOpen ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100" : ""
+              }`}
+              title="Notebook layout & title options"
+            >
+              <ChevronDown size={13} />
+            </button>
+          </div>
+
+          {/* 1-Tap Infinite Canvas */}
           <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium transition-colors"
-            title="Import .wnb board file or PDF document"
+            onClick={() => handleCreateBoard("infinite")}
+            className="h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
+            title="New Infinite Canvas"
           >
-            <FileUp size={14} />
-            <span>Import Document</span>
+            <Plus size={13} className="text-neutral-500" />
+            <span>Canvas</span>
           </button>
 
-          {/* Settings button */}
+          <div className="w-px h-4 bg-neutral-300/70 dark:bg-neutral-700" />
+
+          {/* 1-Tap PDF / .wnb Import */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-[0.98]"
+            title="Import PDF or .wnb file"
+          >
+            <FileUp size={13} className="text-neutral-500" />
+            <span>Import</span>
+          </button>
+
+          {/* Anchored Popover for Title & Page Layout */}
+          {isPopoverOpen && (
+            <div className="absolute top-full mt-2 left-0 w-72 p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl z-50 space-y-3 animate-in fade-in zoom-in-95 duration-100">
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                  Notebook Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Untitled Notebook"
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleCreateBoard("notebook", customTitle, selectedPaper, selectedLayout);
+                    }
+                  }}
+                  autoFocus
+                  className="w-full h-8 px-2.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                  Paper Ruling
+                </label>
+                <div className="grid grid-cols-4 gap-1">
+                  {PAPER_SWATCHES.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedPaper(p.id)}
+                      className={`h-8 rounded-lg border text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                        selectedPaper === p.id
+                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                      }`}
+                    >
+                      <MiniPaperGraphic style={p.id} />
+                      <span>{p.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                  Page Layout
+                </label>
+                <div className="grid grid-cols-2 gap-1">
+                  {LAYOUT_PRESETS.map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setSelectedLayout(l.id)}
+                      className={`h-7 px-2 rounded-lg border text-[11px] font-medium transition-colors ${
+                        selectedLayout === l.id
+                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                      }`}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleCreateBoard("notebook", customTitle, selectedPaper, selectedLayout)}
+                className="w-full h-8 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium hover:opacity-90 transition-opacity"
+              >
+                Create Notebook
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Search, Batch Select, Settings */}
+        <div className="flex items-center gap-1.5">
+          {isSearchOpen ? (
+            <div className="flex items-center h-9 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 gap-1.5">
+              <Search size={13} className="text-neutral-400 shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Filter..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearchQuery("");
+                    setIsSearchOpen(false);
+                  }
+                }}
+                className="w-28 sm:w-36 bg-transparent text-xs outline-none text-neutral-900 dark:text-neutral-100"
+              />
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setIsSearchOpen(false);
+                }}
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              title="Search"
+            >
+              <Search size={15} />
+            </button>
+          )}
+
+          {localBoards.length > 0 && (
+            <>
+              {isSelectMode && selectedIds.size > 0 && (
+                <button
+                  onClick={handleBatchDelete}
+                  className="h-9 px-3 rounded-xl bg-red-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-red-700 transition-colors"
+                >
+                  <Trash2 size={13} />
+                  <span>Delete ({selectedIds.size})</span>
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode);
+                  setSelectedIds(new Set());
+                }}
+                className={`h-9 px-2.5 rounded-xl text-xs font-medium transition-colors ${
+                  isSelectMode
+                    ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900"
+                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                }`}
+                title="Select multiple boards"
+              >
+                {isSelectMode ? "Done" : "Select"}
+              </button>
+            </>
+          )}
+
           <button
             onClick={onOpenSettings}
-            className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             title="Settings"
           >
             <SettingsIcon size={16} />
@@ -213,367 +573,239 @@ export default function Dashboard({
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-8 space-y-8">
+      {/* Main Workspace Grid */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-5 md:p-6 space-y-4">
         {loadingMsg && (
-          <div className="p-3.5 rounded-xl bg-neutral-100 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 flex items-center gap-2.5 animate-pulse">
+          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-mono text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-neutral-500 animate-ping" />
             <span>{loadingMsg}</span>
           </div>
         )}
 
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Create Notebook Card */}
-          <div
-            onClick={() => {
-              setNewBoardTitle("");
-              setNewBoardMode("notebook");
-              setNewBoardPaper("lined");
-              setNewBoardLayout("single");
-              setIsCreateModalOpen(true);
-            }}
-            className="group p-5 rounded-xl bg-neutral-900 dark:bg-neutral-800 border border-neutral-800 dark:border-neutral-700 text-white shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between space-y-4"
-          >
-            <div className="space-y-2">
-              <div className="w-9 h-9 rounded-lg bg-neutral-800 dark:bg-neutral-700 flex items-center justify-center text-white">
-                <BookOpen size={18} />
-              </div>
-              <h3 className="text-base font-semibold tracking-tight text-white">
-                New Notebook
-              </h3>
-              <p className="text-xs text-neutral-300 dark:text-neutral-300">
-                A4 paginated notebook with lined, grid, or dot ruling for school notes and study sheets.
-              </p>
-            </div>
-          </div>
-
-          {/* Create Infinite Whiteboard Card */}
-          <div
-            onClick={() => handleCreateBoard("infinite")}
-            className="group p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between space-y-4"
-          >
-            <div className="space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-                <LayoutGrid size={16} />
-              </div>
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Infinite Whiteboard
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Unbounded 2D Euclidean canvas for freeform diagrams, mind maps, and sketches.
-              </p>
-            </div>
-          </div>
-
-          {/* Import Document Card */}
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="group p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between space-y-4"
-          >
-            <div className="space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-                <FileUp size={16} />
-              </div>
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Import PDF / File
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Open multi-page PDF documents for handwritten markup or load .wnb notebook backups.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {error && (
-          <div className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs text-red-600 dark:text-red-400">
-            {error}
+          <div className="px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-xs text-red-600 dark:text-red-400 flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => setError("")}>
+              <X size={14} />
+            </button>
           </div>
         )}
 
-        {/* Boards List Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-            <div className="flex items-center gap-1">
-              {[
-                { id: "all", label: "All Boards" },
-                { id: "notebook", label: "Notebooks" },
-                { id: "infinite", label: "Infinite Canvases" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                      : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <span className="text-xs text-neutral-400 font-mono">
-              {filteredBoards.length} total
-            </span>
+        {filteredBoards.length === 0 ? (
+          <div className="py-20 text-center rounded-xl border border-dashed border-neutral-300/70 dark:border-neutral-800 p-6">
+            <p className="text-xs font-mono text-neutral-400">
+              {searchQuery ? "No matching boards" : "Empty workspace"}
+            </p>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredBoards.map((b) => {
+              const thumb = b.thumbnail || localStorage.getItem(`wb_thumb_${b.id}`);
+              const isSelected = selectedIds.has(b.id);
+              const isConfirmingDelete = confirmDeleteId === b.id;
+              const isEditingThis = editingBoardId === b.id;
 
-          {filteredBoards.length === 0 ? (
-            <div className="py-16 text-center rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 p-6 space-y-2">
-              <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                No boards found
-              </p>
-              <p className="text-[11px] text-neutral-400">
-                Create a Notebook or Infinite Canvas above, or import a PDF study material.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredBoards.map((b) => {
-                const thumb = b.thumbnail || localStorage.getItem(`wb_thumb_${b.id}`);
-                return (
-                  <div
-                    key={b.id}
-                    onClick={() =>
-                      onOpenBoard({
-                        id: b.id,
-                        title: b.title,
-                        mode: b.mode,
-                        pageLayout: b.pageLayout,
-                      })
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => {
+                    if (isEditingThis) return;
+                    if (isSelectMode) {
+                      toggleSelectBoard(b.id);
+                      return;
                     }
-                    className="group relative p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Thumbnail Preview */}
-                      <div className="w-full h-44 rounded-lg bg-neutral-100/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800/80 p-2.5 flex items-center justify-center mb-3 relative overflow-hidden group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800/60 transition-colors">
-                        {b.mode === "notebook" ? (
-                          <div className="relative h-full aspect-[800/1130] flex items-center justify-center">
-                            {/* Stacked paper sheets for multi-page notebooks */}
-                            {b.pageCount && b.pageCount > 1 ? (
-                              <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-xs bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-300/60 dark:border-neutral-600/50 -z-10 shadow-2xs" />
-                            ) : null}
-                            {b.pageCount && b.pageCount > 2 ? (
-                              <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-xs bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-300/40 dark:border-neutral-600/20 -z-20" />
-                            ) : null}
-
-                            {/* Main Document Page */}
-                            <div className="w-full h-full rounded-xs bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs overflow-hidden flex items-center justify-center relative">
-                              {thumb ? (
-                                <img
-                                  src={thumb}
-                                  alt={b.title}
-                                  className="w-full h-full object-contain pointer-events-none select-none"
-                                />
-                              ) : (
-                                <div className="w-full h-full relative overflow-hidden bg-white dark:bg-neutral-900">
-                                  {b.paperStyle === "lined" && (
-                                    <div className="w-full h-full relative pointer-events-none">
-                                      <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/40 dark:bg-red-400/30" />
-                                      <div
-                                        className="w-full h-full"
-                                        style={{
-                                          backgroundImage:
-                                            "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.25) 90%)",
-                                          backgroundSize: "100% 10px",
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-                                  {b.paperStyle === "grid" && (
-                                    <div
-                                      className="w-full h-full pointer-events-none"
-                                      style={{
-                                        backgroundImage:
-                                          "linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px)",
-                                        backgroundSize: "10px 10px",
-                                      }}
-                                    />
-                                  )}
-                                  {b.paperStyle === "dots" && (
-                                    <div
-                                      className="w-full h-full pointer-events-none"
-                                      style={{
-                                        backgroundImage:
-                                          "radial-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px)",
-                                        backgroundSize: "8px 8px",
-                                      }}
-                                    />
-                                  )}
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-neutral-400 dark:text-neutral-500 pointer-events-none">
-                                    <FileText size={16} className="opacity-40" />
-                                    <span className="text-[9px] font-mono opacity-60">
-                                      Blank Page
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="w-full h-full rounded-md bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs overflow-hidden flex items-center justify-center relative">
-                            {thumb ? (
-                              <img
-                                src={thumb}
-                                alt={b.title}
-                                className="w-full h-full object-contain p-1 pointer-events-none select-none"
-                              />
-                            ) : (
-                              <div
-                                className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-neutral-400"
-                                style={{
-                                  backgroundImage:
-                                    "radial-gradient(rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
-                                  backgroundSize: "12px 12px",
-                                }}
-                              >
-                                <LayoutGrid size={20} className="opacity-40" />
-                                <span className="text-[10px] font-mono opacity-50">
-                                  Empty Canvas
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                          {b.title}
-                        </h4>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 uppercase">
-                          {b.mode}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-[11px] text-neutral-400 mt-1">
-                        <div className="flex items-center gap-1">
-                          <Clock size={11} />
-                          <span>{new Date(b.updatedAt).toLocaleDateString()}</span>
-                        </div>
-                        {b.mode === "notebook" && (
-                          <span>• {b.pageCount || 1} {b.pageCount === 1 ? "page" : "pages"}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 mt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px]">
-                      <span className="text-neutral-400 text-[10px] uppercase font-mono">
-                        {b.paperStyle || "plain"}
-                      </span>
-
-                      <button
-                        onClick={(e) => handleDeleteLocal(b.id, e)}
-                        className="p-1 rounded text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title="Delete Board"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Unified Create Board Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-sm p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Create New Board
-              </h3>
-              <button
-                onClick={() => setIsCreateModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-sm p-1"
-              >
-                <X size={15} />
-              </button>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                Title
-              </label>
-              <input
-                type="text"
-                placeholder={newBoardMode === "notebook" ? "e.g. Physics Notes" : "e.g. Project Brainstorm"}
-                value={newBoardTitle}
-                onChange={(e) => setNewBoardTitle(e.target.value)}
-                autoFocus
-                className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                Mode
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setNewBoardMode("notebook")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
-                    newBoardMode === "notebook"
-                      ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                    onOpenBoard({
+                      id: b.id,
+                      title: b.title,
+                      mode: b.mode,
+                      pageLayout: b.pageLayout,
+                    });
+                  }}
+                  className={`group relative p-2.5 rounded-xl bg-white dark:bg-neutral-900 border transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100"
+                      : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                   }`}
                 >
-                  <BookOpen size={13} />
-                  <span>Notebook (A4)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNewBoardMode("infinite")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
-                    newBoardMode === "infinite"
-                      ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
-                      : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                  }`}
-                >
-                  <LayoutGrid size={13} />
-                  <span>Infinite Canvas</span>
-                </button>
-              </div>
-            </div>
-
-            {newBoardMode === "notebook" && (
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Paper Grid
-                </label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {(["lined", "grid", "dots", "blank"] as PaperStyle[]).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setNewBoardPaper(p)}
-                      className={`py-1.5 rounded-lg border text-xs capitalize transition-colors ${
-                        newBoardPaper === p
-                          ? "border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs font-semibold"
-                          : "border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                  {/* Multi-select Checkbox Overlay */}
+                  {isSelectMode && (
+                    <div
+                      className={`absolute top-4 right-4 z-20 w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
+                        isSelected
+                          ? "bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 text-white dark:text-neutral-900"
+                          : "bg-white/90 dark:bg-neutral-900/90 border-neutral-300 dark:border-neutral-600"
                       }`}
                     >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                      {isSelected && <Check size={13} strokeWidth={2.5} />}
+                    </div>
+                  )}
 
-            <button
-              onClick={() => handleCreateBoard(newBoardMode, newBoardTitle, newBoardPaper, newBoardLayout)}
-              className="w-full py-2 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Create {newBoardMode === "notebook" ? "Notebook" : "Whiteboard"}
-            </button>
+                  {/* Document / Canvas Preview */}
+                  <div className="w-full h-44 rounded-lg bg-neutral-100/80 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800/80 p-2.5 flex items-center justify-center mb-2.5 relative overflow-hidden">
+                    {b.mode === "notebook" ? (
+                      <div className="relative h-full aspect-[800/1130] flex items-center justify-center">
+                        {b.pageCount && b.pageCount > 1 ? (
+                          <div className="absolute inset-0 translate-x-1 translate-y-1 rounded-[2px] bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-300/60 dark:border-neutral-600/50 -z-10" />
+                        ) : null}
+                        {b.pageCount && b.pageCount > 2 ? (
+                          <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-[2px] bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-300/40 dark:border-neutral-600/20 -z-20" />
+                        ) : null}
+
+                        <div
+                          className="w-full h-full rounded-[2px] border border-neutral-200/90 dark:border-neutral-700/80 shadow-2xs overflow-hidden flex items-center justify-center relative"
+                          style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
+                        >
+                          {thumb ? (
+                            <img
+                              src={thumb}
+                              alt={b.title}
+                              className="w-full h-full object-contain pointer-events-none select-none"
+                            />
+                          ) : (
+                            <div className="w-full h-full relative overflow-hidden">
+                              {b.paperStyle === "lined" && (
+                                <div className="w-full h-full relative pointer-events-none">
+                                  <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/35 dark:bg-red-400/25" />
+                                  <div
+                                    className="w-full h-full"
+                                    style={{
+                                      backgroundImage:
+                                        "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.25) 90%)",
+                                      backgroundSize: "100% 9px",
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              {b.paperStyle === "grid" && (
+                                <div
+                                  className="w-full h-full pointer-events-none"
+                                  style={{
+                                    backgroundImage:
+                                      "linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px)",
+                                    backgroundSize: "9px 9px",
+                                  }}
+                                />
+                              )}
+                              {b.paperStyle === "dots" && (
+                                <div
+                                  className="w-full h-full pointer-events-none"
+                                  style={{
+                                    backgroundImage:
+                                      "radial-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px)",
+                                    backgroundSize: "8px 8px",
+                                  }}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-full h-full rounded-md border border-neutral-200/90 dark:border-neutral-700/80 shadow-2xs overflow-hidden flex items-center justify-center relative"
+                        style={{ backgroundColor: "var(--paper-bg, #ffffff)" }}
+                      >
+                        {thumb ? (
+                          <img
+                            src={thumb}
+                            alt={b.title}
+                            className="w-full h-full object-contain p-1 pointer-events-none select-none"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full flex items-center justify-center text-neutral-300 dark:text-neutral-700"
+                            style={{
+                              backgroundImage:
+                                "radial-gradient(rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
+                              backgroundSize: "10px 10px",
+                            }}
+                          >
+                            <LayoutGrid size={18} className="opacity-40" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Compact High-Density Card Footer */}
+                  <div className="px-0.5 space-y-1">
+                    <div className="flex items-center justify-between gap-1.5">
+                      {isEditingThis ? (
+                        <input
+                          type="text"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onBlur={() => handleCommitRename(b)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleCommitRename(b);
+                            if (e.key === "Escape") setEditingBoardId(null);
+                          }}
+                          autoFocus
+                          className="w-full px-1.5 py-0.5 text-xs font-semibold rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 outline-none"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-1 min-w-0 flex-1">
+                          <h4 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                            {b.title}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingBoardId(b.id);
+                              setEditingTitle(b.title);
+                            }}
+                            className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            title="Rename"
+                          >
+                            <Edit2 size={11} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span>
+                          {new Date(b.updatedAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span>·</span>
+                        {b.mode === "notebook" ? (
+                          <span>
+                            {b.pageCount || 1}p · {b.paperStyle || "lined"}
+                          </span>
+                        ) : (
+                          <span>canvas</span>
+                        )}
+                      </div>
+
+                      {!isSelectMode && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteBoard(b.id, e)}
+                          className={`h-6 px-1.5 rounded flex items-center gap-1 text-[10px] font-sans font-medium transition-colors ${
+                            isConfirmingDelete
+                              ? "bg-red-600 text-white"
+                              : "text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                          }`}
+                          title={isConfirmingDelete ? "Tap again to delete" : "Delete"}
+                        >
+                          <Trash2 size={12} />
+                          {isConfirmingDelete && <span>Delete?</span>}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

@@ -505,6 +505,11 @@ function App() {
             onPaperStyleChange={handlePaperStyleChange}
             currentPage={currentPage}
             pageCount={pageCount}
+            onSelectPage={(pageNum) => {
+              setCurrentPage(pageNum);
+              canvasRef.current?.focusPage(pageNum);
+            }}
+            onAddPage={handleAddPage}
             pageLayout={pageLayout}
             onPageLayoutChange={handlePageLayoutChange}
             isSidebarOpen={isSidebarOpen}

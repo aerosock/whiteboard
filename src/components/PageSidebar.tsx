@@ -194,13 +194,13 @@ export default function PageSidebar({
     });
   }
 
-  const LAYOUT_OPTIONS: { id: PageLayout; label: string; sub: string }[] = [
-    { id: "single", label: "Single Column", sub: "1 Sheet Wide" },
-    { id: "double", label: "Facing Spread", sub: "Book Spine" },
-    { id: "horizontal", label: "Horizontal Line", sub: "1 Long Row" },
-    { id: "grid-3", label: "3 Columns Grid", sub: "3 Sheets Wide" },
-    { id: "grid-4", label: "4 Columns Grid", sub: "4 Sheets Wide" },
-    { id: "grid-6", label: "6 Columns Grid", sub: "6 Sheets Wide" },
+  const LAYOUT_OPTIONS: { id: PageLayout; label: string }[] = [
+    { id: "single", label: "Single Page" },
+    { id: "double", label: "2-Page Spread" },
+    { id: "horizontal", label: "Horizontal Strip" },
+    { id: "grid-3", label: "3-Column Grid" },
+    { id: "grid-4", label: "4-Column Grid" },
+    { id: "grid-6", label: "6-Column Grid" },
   ];
 
   return (
@@ -230,10 +230,7 @@ export default function PageSidebar({
             </button>
 
             {showLayoutMenu && (
-              <div className="absolute right-0 top-8 z-50 min-w-[170px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-xl py-1 text-xs text-neutral-800 dark:text-neutral-200 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-800">
-                  Sheet Layout
-                </div>
+              <div className="absolute right-0 top-8 z-50 min-w-[150px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl py-1 text-xs text-neutral-800 dark:text-neutral-200 animate-in fade-in zoom-in-95 duration-100">
                 {LAYOUT_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
@@ -241,15 +238,12 @@ export default function PageSidebar({
                       onPageLayoutChange(opt.id);
                       setShowLayoutMenu(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
-                      pageLayout === opt.id ? "font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20" : ""
+                    className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
+                      pageLayout === opt.id ? "font-semibold text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800" : ""
                     }`}
                   >
-                    <div>
-                      <div>{opt.label}</div>
-                      <div className="text-[10px] text-neutral-400 font-normal">{opt.sub}</div>
-                    </div>
-                    {pageLayout === opt.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                    <span>{opt.label}</span>
+                    {pageLayout === opt.id && <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-neutral-100" />}
                   </button>
                 ))}
               </div>
@@ -334,7 +328,7 @@ export default function PageSidebar({
                     Page {pageNum}
                   </span>
 
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className={`flex items-center gap-0.5 transition-opacity ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                     {pageNum > 1 && (
                       <button
                         onClick={(e) => {

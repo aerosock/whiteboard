@@ -77,6 +77,12 @@
 [data-theme="warm"] .bg-neutral-100 {
   background-color: var(--bg-subtle) !important;
 }
+[data-theme="warm"] .bg-neutral-200 {
+  background-color: #dfd8b8 !important;
+}
+[data-theme="warm"] .bg-neutral-900 {
+  background-color: #2d2616 !important;
+}
 [data-theme="warm"] .border-neutral-100,
 [data-theme="warm"] .border-neutral-200,
 [data-theme="warm"] .border-neutral-300 {
