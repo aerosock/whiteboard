@@ -347,21 +347,93 @@ export default function Dashboard({
                   >
                     <div>
                       {/* Thumbnail Preview */}
-                      <div className="w-full h-32 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-800 overflow-hidden flex items-center justify-center mb-3">
-                        {thumb ? (
-                          <img
-                            src={thumb}
-                            alt={b.title}
-                            className="w-full h-full object-cover"
-                          />
+                      <div className="w-full h-44 rounded-lg bg-neutral-100/70 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-800/80 p-2.5 flex items-center justify-center mb-3 relative overflow-hidden group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800/60 transition-colors">
+                        {b.mode === "notebook" ? (
+                          <div className="relative h-full aspect-[800/1130] flex items-center justify-center">
+                            {/* Stacked paper sheets for multi-page notebooks */}
+                            {b.pageCount && b.pageCount > 1 ? (
+                              <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-xs bg-neutral-200/90 dark:bg-neutral-700/60 border border-neutral-300/60 dark:border-neutral-600/50 -z-10 shadow-2xs" />
+                            ) : null}
+                            {b.pageCount && b.pageCount > 2 ? (
+                              <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-xs bg-neutral-300/60 dark:bg-neutral-700/30 border border-neutral-300/40 dark:border-neutral-600/20 -z-20" />
+                            ) : null}
+
+                            {/* Main Document Page */}
+                            <div className="w-full h-full rounded-xs bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs overflow-hidden flex items-center justify-center relative">
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt={b.title}
+                                  className="w-full h-full object-contain pointer-events-none select-none"
+                                />
+                              ) : (
+                                <div className="w-full h-full relative overflow-hidden bg-white dark:bg-neutral-900">
+                                  {b.paperStyle === "lined" && (
+                                    <div className="w-full h-full relative pointer-events-none">
+                                      <div className="absolute top-0 bottom-0 left-[14%] w-px bg-red-400/40 dark:bg-red-400/30" />
+                                      <div
+                                        className="w-full h-full"
+                                        style={{
+                                          backgroundImage:
+                                            "linear-gradient(to bottom, transparent 90%, rgba(148, 163, 184, 0.25) 90%)",
+                                          backgroundSize: "100% 10px",
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  {b.paperStyle === "grid" && (
+                                    <div
+                                      className="w-full h-full pointer-events-none"
+                                      style={{
+                                        backgroundImage:
+                                          "linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px)",
+                                        backgroundSize: "10px 10px",
+                                      }}
+                                    />
+                                  )}
+                                  {b.paperStyle === "dots" && (
+                                    <div
+                                      className="w-full h-full pointer-events-none"
+                                      style={{
+                                        backgroundImage:
+                                          "radial-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px)",
+                                        backgroundSize: "8px 8px",
+                                      }}
+                                    />
+                                  )}
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-neutral-400 dark:text-neutral-500 pointer-events-none">
+                                    <FileText size={16} className="opacity-40" />
+                                    <span className="text-[9px] font-mono opacity-60">
+                                      Blank Page
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         ) : (
-                          <div className="flex flex-col items-center gap-1.5 text-neutral-400">
-                            {b.mode === "notebook" ? (
-                              <FileText size={24} className="opacity-40" />
+                          <div className="w-full h-full rounded-md bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-700/80 shadow-xs overflow-hidden flex items-center justify-center relative">
+                            {thumb ? (
+                              <img
+                                src={thumb}
+                                alt={b.title}
+                                className="w-full h-full object-contain p-1 pointer-events-none select-none"
+                              />
                             ) : (
-                              <LayoutGrid size={24} className="opacity-40" />
+                              <div
+                                className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-neutral-400"
+                                style={{
+                                  backgroundImage:
+                                    "radial-gradient(rgba(148, 163, 184, 0.3) 1px, transparent 1px)",
+                                  backgroundSize: "12px 12px",
+                                }}
+                              >
+                                <LayoutGrid size={20} className="opacity-40" />
+                                <span className="text-[10px] font-mono opacity-50">
+                                  Empty Canvas
+                                </span>
+                              </div>
                             )}
-                            <span className="text-[10px] font-mono opacity-50">Empty Canvas</span>
                           </div>
                         )}
                       </div>

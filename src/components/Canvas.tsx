@@ -702,8 +702,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         if (!boardIdRef.current) return;
         if (strokes.current.length === 0 && images.current.length === 0) return;
 
-        const thumbW = 200;
-        const thumbH = 130;
+        const thumbW = 320;
+        const thumbH = 208;
         const canvas = document.createElement("canvas");
         canvas.width = thumbW;
         canvas.height = thumbH;
@@ -801,8 +801,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
       if (modeRef.current !== "notebook") return;
       const count = countRef.current;
-      const thumbW = 160;
-      const thumbH = Math.round(thumbW * (PAGE_H / PAGE_W)); // 226px
+      const thumbW = 280;
+      const thumbH = Math.round(thumbW * (PAGE_H / PAGE_W)); // 396px
       const scale = thumbW / PAGE_W;
 
       const canvas = document.createElement("canvas");
