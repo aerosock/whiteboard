@@ -371,6 +371,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
     // Performance Caching: Precomputed Path2D and Bounding Boxes
     const strokePathCache = useRef<Map<string, Path2D>>(new Map());
+    const strokeSpineCache = useRef<Map<string, Path2D>>(new Map());
     const strokeBBoxCache = useRef<Map<string, { x: number; y: number; w: number; h: number }>>(new Map());
     const cachedThumbnails = useRef<Record<number, string>>({});
     const activeStrokePage = useRef<number>(1);
@@ -765,6 +766,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           }
 
           strokePathCache.current.clear();
+          strokeSpineCache.current.clear();
           strokeBBoxCache.current.clear();
           redrawMain();
           scheduleThumbnailUpdate();
@@ -903,11 +905,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           }
 
           for (const stroke of strokes.current) {
-            const path = getOrCreateStrokePath(stroke);
-            if (path) {
-              ctx.fillStyle = getAdaptiveStrokeColor(stroke.color, "light");
-              ctx.fill(path);
-            }
+            drawCommittedStroke(ctx, stroke, "light");
           }
           ctx.restore();
         }
@@ -1019,11 +1017,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
         for (const stroke of strokes.current) {
           if (stroke.page === i) {
-            const path = getOrCreateStrokePath(stroke);
-            if (path) {
-              ctx.fillStyle = getAdaptiveStrokeColor(stroke.color, "light");
-              ctx.fill(path);
-            }
+            drawCommittedStroke(ctx, stroke, "light");
           }
         }
 
@@ -1075,7 +1069,12 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
     //  Stroke Rendering & Path2D Caching
     // -------------------------
 
-    function createStrokePath(points: number[][], size: number): Path2D | null {
+    function createStrokePath(
+      points: number[][],
+      size: number,
+      isComplete = true,
+    ): Path2D | null {
+      if (points.length === 0) return null;
       if (points.length === 1) {
         const [x, y] = points[0];
         const p = new Path2D();
@@ -1085,28 +1084,74 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
 
       const outline = getStroke(points, {
         size,
-        thinning: 0.5,
-        smoothing: 0.5,
-        streamline: 0.5,
+        thinning: 0.18,
+        smoothing: 0.6,
+        streamline: 0.55,
         simulatePressure: true,
+        last: isComplete,
       });
       if (outline.length < 2) return null;
 
       const path = new Path2D();
+      if (outline.length < 4) {
+        path.moveTo(outline[0][0], outline[0][1]);
+        for (let i = 1; i < outline.length; i++) {
+          path.lineTo(outline[i][0], outline[i][1]);
+        }
+        path.closePath();
+        return path;
+      }
+
+      // Smooth midpoint quadratic Bézier curve interpolation converts faceted polygon edges into silky smooth curves
       path.moveTo(outline[0][0], outline[0][1]);
-      for (let i = 1; i < outline.length; i++) {
-        path.lineTo(outline[i][0], outline[i][1]);
+      for (let i = 0; i < outline.length; i++) {
+        const p0 = outline[i];
+        const p1 = outline[(i + 1) % outline.length];
+        const midX = (p0[0] + p1[0]) / 2;
+        const midY = (p0[1] + p1[1]) / 2;
+        path.quadraticCurveTo(p0[0], p0[1], midX, midY);
       }
       path.closePath();
+      return path;
+    }
+
+    function createSpinePath(points: number[][]): Path2D | null {
+      if (points.length < 2) return null;
+      const path = new Path2D();
+      path.moveTo(points[0][0], points[0][1]);
+      if (points.length === 2) {
+        path.lineTo(points[1][0], points[1][1]);
+        return path;
+      }
+      for (let i = 1; i < points.length; i++) {
+        const p0 = points[i - 1];
+        const p1 = points[i];
+        const midX = (p0[0] + p1[0]) / 2;
+        const midY = (p0[1] + p1[1]) / 2;
+        path.quadraticCurveTo(p0[0], p0[1], midX, midY);
+      }
+      path.lineTo(points[points.length - 1][0], points[points.length - 1][1]);
       return path;
     }
 
     function getOrCreateStrokePath(stroke: StrokeData): Path2D | null {
       let cached = strokePathCache.current.get(stroke.id);
       if (!cached) {
-        const p = createStrokePath(stroke.points, stroke.size);
+        const p = createStrokePath(stroke.points, stroke.size, true);
         if (p) {
           strokePathCache.current.set(stroke.id, p);
+          cached = p;
+        }
+      }
+      return cached || null;
+    }
+
+    function getOrCreateStrokeSpine(stroke: StrokeData): Path2D | null {
+      let cached = strokeSpineCache.current.get(stroke.id);
+      if (!cached) {
+        const p = createSpinePath(stroke.points);
+        if (p) {
+          strokeSpineCache.current.set(stroke.id, p);
           cached = p;
         }
       }
@@ -1118,11 +1163,61 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       points: number[][],
       strokeColor: string,
       size: number,
+      isComplete = true,
     ) {
-      const path = createStrokePath(points, size);
+      if (points.length === 0) return;
+      if (points.length === 1) {
+        const [x, y] = points[0];
+        ctx.fillStyle = strokeColor;
+        ctx.beginPath();
+        ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+
+      const path = createStrokePath(points, size, isComplete);
       if (path) {
         ctx.fillStyle = strokeColor;
         ctx.fill(path);
+      }
+
+      // Solid core spine reinforcement: fills any self-intersection cutout gap when strokes loop or cross over themselves
+      const spine = createSpinePath(points);
+      if (spine) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = Math.max(1, size * 0.7);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke(spine);
+      }
+    }
+
+    function drawCommittedStroke(
+      ctx: CanvasRenderingContext2D,
+      stroke: StrokeData,
+      theme: EffectiveTheme = themeRef.current,
+    ) {
+      const color = getAdaptiveStrokeColor(stroke.color, theme);
+      if (stroke.points.length === 1) {
+        const [x, y] = stroke.points[0];
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, stroke.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+      const path = getOrCreateStrokePath(stroke);
+      if (path) {
+        ctx.fillStyle = color;
+        ctx.fill(path);
+      }
+      const spine = getOrCreateStrokeSpine(stroke);
+      if (spine) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(1, stroke.size * 0.7);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke(spine);
       }
     }
 
@@ -1677,11 +1772,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           // Strokes on this page (page-relative)
           for (const stroke of strokes.current) {
             if (stroke.page === i) {
-              const path = getOrCreateStrokePath(stroke);
-              if (path) {
-                ctx.fillStyle = getAdaptiveStrokeColor(stroke.color, currentTheme);
-                ctx.fill(path);
-              }
+              drawCommittedStroke(ctx, stroke, currentTheme);
             }
           }
 
@@ -1712,11 +1803,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
             continue;
           }
 
-          const path = getOrCreateStrokePath(stroke);
-          if (path) {
-            ctx.fillStyle = getAdaptiveStrokeColor(stroke.color, currentTheme);
-            ctx.fill(path);
-          }
+          drawCommittedStroke(ctx, stroke, currentTheme);
         }
       }
 
@@ -1752,15 +1839,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       }
 
       const activeColor = getAdaptiveStrokeColor(colorRef.current, themeRef.current);
-      if (currentPoints.current.length === 1) {
-        const [x, y] = currentPoints.current[0];
-        ctx.fillStyle = activeColor;
-        ctx.beginPath();
-        ctx.arc(x, y, sizeRef.current / 2, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        renderStroke(ctx, currentPoints.current, activeColor, sizeRef.current);
-      }
+      renderStroke(ctx, currentPoints.current, activeColor, sizeRef.current, false);
 
       ctx.restore();
     }
@@ -2034,6 +2113,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       if (erasedStrokes.length > 0) {
         for (const s of erasedStrokes) {
           strokePathCache.current.delete(s.id);
+          strokeSpineCache.current.delete(s.id);
           strokeBBoxCache.current.delete(s.id);
         }
 
@@ -2063,6 +2143,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
             p[1] += dy;
           }
           strokePathCache.current.delete(stroke.id);
+          strokeSpineCache.current.delete(stroke.id);
           strokeBBoxCache.current.delete(stroke.id);
         }
         const img = images.current.find((i) => i.id === id);
@@ -2543,6 +2624,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       selection.current.clear();
       clearOverlay();
       strokePathCache.current.clear();
+      strokeSpineCache.current.clear();
       strokeBBoxCache.current.clear();
       redrawMain();
       persistLocalData();
@@ -2608,6 +2690,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
       selection.current.clear();
       clearOverlay();
       strokePathCache.current.clear();
+      strokeSpineCache.current.clear();
       strokeBBoxCache.current.clear();
       redrawMain();
       persistLocalData();
@@ -2640,6 +2723,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         clearOverlay();
         cachedThumbnails.current = {};
         strokePathCache.current.clear();
+        strokeSpineCache.current.clear();
         strokeBBoxCache.current.clear();
         redrawMain();
         persistLocalData();
@@ -2685,6 +2769,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
         images.current = newImages;
         cachedThumbnails.current = {};
         strokePathCache.current.clear();
+        strokeSpineCache.current.clear();
         strokeBBoxCache.current.clear();
         redrawMain();
         persistLocalData();
